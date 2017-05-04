@@ -14,6 +14,7 @@ import top.toybus.luyao.api.entity.Car;
 import top.toybus.luyao.api.formbean.CarForm;
 import top.toybus.luyao.api.repository.CarRepository;
 import top.toybus.luyao.common.bean.ResData;
+import top.toybus.luyao.common.util.PageUtils;
 
 @Service
 @Transactional
@@ -60,8 +61,8 @@ public class CarService {
     public ResData getCarList(CarForm carForm) {
 	ResData resData = new ResData();
 	Pageable pageable = new PageRequest(carForm.getPage(), carForm.getSize());
-	Page<Car> carPage = carRepository.findAll(pageable);
-	resData.put("carPage", carPage);
+	Page<Car> pageCar = carRepository.findAllBy(pageable);
+	resData.putAll(PageUtils.toMap("carList", pageCar));
 	return resData;
     }
 

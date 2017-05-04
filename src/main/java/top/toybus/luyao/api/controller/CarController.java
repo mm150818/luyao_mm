@@ -29,6 +29,7 @@ public class CarController {
     /**
      * 列表
      */
+    // @JsonView(User.BaseView.class)
     @RequestMapping("/list")
     public ResData list(CarForm carForm) {
 	ResData resData = carService.getCarList(carForm);
