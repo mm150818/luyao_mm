@@ -30,21 +30,22 @@ public class SmsService {
      */
     public ResData sendVerifyCode(SmsForm smsForm) {
 	ResData resData = new ResData();
-	Sms formSms = smsForm.getSms();
-	if (StringUtils.isBlank(formSms.getMobile())) {
+	if (StringUtils.isBlank(smsForm.getMobile())) {
 	    resData.setSc(ResData.SC_PARAM_ERROR);
 	    resData.setMsg("请输入手机号");
 	} else {
+	    Sms newSms = new Sms();
+	    newSms.setMobile(smsForm.getMobile());
 	    // 发送短信
 	    String code = RandomStringUtils.randomNumeric(4);
 	    System.out.println(code);
-	    formSms.setCode(code);
-	    formSms.setContent(smsTemplateVerifyCode.replace("{code}", code));
-	    formSms.setStatus(0);
-	    formSms.setCreateTime(new Date());
-	    formSms.setUpdateTime(new Date());
+	    newSms.setCode(code);
+	    newSms.setContent(smsTemplateVerifyCode.replace("{code}", code));
+	    newSms.setStatus(0);
+	    newSms.setCreateTime(new Date());
+	    newSms.setUpdateTime(new Date());
 
-	    smsRepository.save(formSms);
+	    smsRepository.save(newSms);
 	}
 	return resData;
     }

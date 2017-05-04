@@ -22,12 +22,18 @@ public class Sms implements Serializable {
     @Id
     @GeneratedValue
     private Long id;
+
     private String mobile;
+
     private String code;
+
     private String content;
+
     private Integer status;
+
     @Column(name = "create_time")
     private Date createTime;
+
     @Column(name = "update_time")
     private Date updateTime;
 }

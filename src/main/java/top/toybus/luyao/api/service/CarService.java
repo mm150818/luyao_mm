@@ -3,6 +3,7 @@ package top.toybus.luyao.api.service;
 import java.util.Date;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -27,30 +28,37 @@ public class CarService {
      */
     public ResData publishCar(CarForm carForm) {
 	ResData resData = new ResData();
-	Car formCar = carForm.getCar();
+
 	// 名字，时间，建议赏金，空座位，起点，途径一，途径二，终点
-	if (StringUtils.isBlank(formCar.getName())) {
+	if (StringUtils.isBlank(carForm.getName())) {
 	    resData.setSc(ResData.SC_PARAM_ERROR).setMsg("请输入名字");
-	} else if (formCar.getTime() == null) {
+	} else if (carForm.getTime() == null) {
 	    resData.setSc(ResData.SC_PARAM_ERROR).setMsg("请输入时间");
-	} else if (formCar.getReward() == null) {
+	} else if (carForm.getReward() == null) {
 	    resData.setSc(ResData.SC_PARAM_ERROR).setMsg("请输入建议赏金");
-	} else if (formCar.getSeats() == null) {
+	} else if (carForm.getSeats() == null) {
 	    resData.setSc(ResData.SC_PARAM_ERROR).setMsg("请输入空座位");
-	} else if (StringUtils.isBlank(formCar.getStartPoint())) {
+	} else if (StringUtils.isBlank(carForm.getStartPoint())) {
 	    resData.setSc(ResData.SC_PARAM_ERROR).setMsg("请输入起点");
-	} else if (StringUtils.isBlank(formCar.getVia1())) {
+	} else if (StringUtils.isBlank(carForm.getVia1())) {
 	    resData.setSc(ResData.SC_PARAM_ERROR).setMsg("请输入途经一");
-	} else if (StringUtils.isBlank(formCar.getVia2())) {
+	} else if (StringUtils.isBlank(carForm.getVia2())) {
 	    resData.setSc(ResData.SC_PARAM_ERROR).setMsg("请输入途经二");
-	} else if (StringUtils.isBlank(formCar.getEndPoint())) {
+	} else if (StringUtils.isBlank(carForm.getEndPoint())) {
 	    resData.setSc(ResData.SC_PARAM_ERROR).setMsg("请输入终点");
 	} else {
-	    formCar.setRemainSeats(0);
-	    formCar.setCreateTime(new Date());
-	    formCar.setUpdateTime(new Date());
+	    Car newCar = new Car();
+	    try {
+		BeanUtils.copyProperties(carForm, newCar);
+		newCar.setRemainSeats(0);
+		newCar.setCreateTime(new Date());
+		newCar.setUpdateTime(new Date());
 
-	    carRepository.save(formCar);
+		carRepository.save(newCar);
+	    } catch (Exception e) {
+		e.printStackTrace();
+		resData.setSc(1).setMsg("信息发布失败");
+	    }
 	}
 	return resData;
     }
@@ -71,10 +79,9 @@ public class CarService {
      */
     public ResData getCarDetail(CarForm carForm) {
 	ResData resData = new ResData();
-	Car formCar = carForm.getCar();
 	Car car = null;
-	if (formCar.getId() != null) {
-	    car = carRepository.findOne(formCar.getId());
+	if (carForm.getId() != null) {
+	    car = carRepository.findOne(carForm.getId());
 	}
 	resData.put("car", car);
 	return resData;

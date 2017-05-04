@@ -32,16 +32,23 @@ public class User implements Serializable {
     @Id
     @GeneratedValue
     private Long id;
+
     @JsonIgnore
     private String token;
+
     private String mobile;
+
     private String nickname;
+
     private BigDecimal balance;
+
     private Integer status;
+
     @JsonIgnore
     // @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     @Column(name = "create_time")
     private Date createTime;
+
     @JsonIgnore
     @Column(name = "update_time")
     private Date updateTime;
