@@ -8,10 +8,10 @@ import java.util.UUID;
  * @author sunxg
  */
 public class UUIDUtils {
-    /**
-     * 产生32位小写UUID字符串
-     */
-    public static String randUUID() {
-	return UUID.randomUUID().toString().replace("-", "");
-    }
+	/**
+	 * 产生32位小写UUID字符串
+	 */
+	public static String randUUID() {
+		return UUID.randomUUID().toString().replace("-", "");
+	}
 }

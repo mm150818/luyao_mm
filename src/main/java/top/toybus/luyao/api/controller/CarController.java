@@ -14,34 +14,34 @@ import top.toybus.luyao.common.bean.ResData;
 @RestController
 @RequestMapping("/api/car")
 public class CarController {
-    @Autowired
-    private CarService carService;
+	@Autowired
+	private CarService carService;
 
-    /**
-     * 发布
-     */
-    @RequestMapping("/publish")
-    public ResData publish(CarForm carForm) {
-	ResData resData = carService.publishCar(carForm);
-	return resData;
-    }
+	/**
+	 * 发布
+	 */
+	@RequestMapping("/publish")
+	public ResData publish(CarForm carForm) {
+		ResData resData = carService.publishCar(carForm);
+		return resData;
+	}
 
-    /**
-     * 列表
-     */
-    // @JsonView(User.BaseView.class)
-    @RequestMapping("/list")
-    public ResData list(CarForm carForm) {
-	ResData resData = carService.getCarList(carForm);
-	return resData;
-    }
+	/**
+	 * 列表
+	 */
+	// @JsonView(User.BaseView.class)
+	@RequestMapping("/list")
+	public ResData list(CarForm carForm) {
+		ResData resData = carService.getCarList(carForm);
+		return resData;
+	}
 
-    /**
-     * 详情
-     */
-    @RequestMapping("/detail")
-    public ResData detail(CarForm carForm) {
-	ResData resData = carService.getCarDetail(carForm);
-	return resData;
-    }
+	/**
+	 * 详情
+	 */
+	@RequestMapping("/detail")
+	public ResData detail(CarForm carForm) {
+		ResData resData = carService.getCarDetail(carForm);
+		return resData;
+	}
 }

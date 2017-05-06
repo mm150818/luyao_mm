@@ -12,6 +12,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import lombok.Data;
 
@@ -23,25 +24,26 @@ import lombok.Data;
 @Table(name = "tb_user_car")
 @SuppressWarnings("serial")
 public class CarUser implements Serializable {
-    @Id
-    @GeneratedValue
-    private Long id;
+	@Id
+	@GeneratedValue
+	private Long id;
 
-    @Column(name = "car_id")
-    private Long carId;
+	@Column(name = "car_id")
+	private Long carId;
 
-    // @JsonUnwrapped
-    @ManyToOne
-    @JoinColumn(name = "user_id")
-    private User user;
+	// @JsonUnwrapped
+	@JsonIgnoreProperties("userCarList")
+	@ManyToOne
+	@JoinColumn(name = "user_id")
+	private User user;
 
-    private Integer seats;
+	private Integer seats;
 
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
-    @Column(name = "create_time")
-    private Date createTime;
+	@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+	@Column(name = "create_time")
+	private Date createTime;
 
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
-    @Column(name = "update_time")
-    private Date updateTime;
+	@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+	@Column(name = "update_time")
+	private Date updateTime;
 }

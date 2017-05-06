@@ -14,33 +14,33 @@ import top.toybus.luyao.common.bean.ResData;
 @RestController
 @RequestMapping("/api/user")
 public class UserController {
-    @Autowired
-    private UserService userService;
+	@Autowired
+	private UserService userService;
 
-    /**
-     * 用户注册
-     */
-    @RequestMapping("/regist")
-    public ResData regist(UserForm userForm) {
-	ResData resData = userService.registUser(userForm);
-	return resData;
-    }
+	/**
+	 * 用户注册
+	 */
+	@RequestMapping("/regist")
+	public ResData regist(UserForm userForm) {
+		ResData resData = userService.registUser(userForm);
+		return resData;
+	}
 
-    /**
-     * 用户登录
-     */
-    @RequestMapping("/login")
-    public ResData login(UserForm userForm) {
-	ResData resData = userService.loginUser(userForm);
-	return resData;
-    }
+	/**
+	 * 用户登录
+	 */
+	@RequestMapping("/login")
+	public ResData login(UserForm userForm) {
+		ResData resData = userService.loginUser(userForm);
+		return resData;
+	}
 
-    /**
-     * 用户信息
-     */
-    @RequestMapping("/info")
-    public ResData info(UserForm userForm) {
-	ResData resData = userService.getUser(userForm);
-	return resData;
-    }
+	/**
+	 * 用户信息
+	 */
+	@RequestMapping("/info")
+	public ResData info(UserForm userForm) {
+		ResData resData = userService.getUser(userForm);
+		return resData;
+	}
 }

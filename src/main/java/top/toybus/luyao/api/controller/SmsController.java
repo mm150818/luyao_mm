@@ -14,15 +14,15 @@ import top.toybus.luyao.common.bean.ResData;
 @RestController
 @RequestMapping("/api/sms")
 public class SmsController {
-    @Autowired
-    private SmsService smsService;
+	@Autowired
+	private SmsService smsService;
 
-    /**
-     * 发送登录、注册短信验证码
-     */
-    @RequestMapping("/sendVerifyCode")
-    public ResData sendVerifyCode(SmsForm smsForm) {
-	ResData resData = smsService.sendVerifyCode(smsForm);
-	return resData;
-    }
+	/**
+	 * 发送登录、注册短信验证码
+	 */
+	@RequestMapping("/sendVerifyCode")
+	public ResData sendVerifyCode(SmsForm smsForm) {
+		ResData resData = smsService.sendVerifyCode(smsForm);
+		return resData;
+	}
 }

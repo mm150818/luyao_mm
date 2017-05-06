@@ -4,6 +4,6 @@ import lombok.Data;
 
 @Data
 public class UserForm {
-    private String mobile;
-    private String code;
+	private String mobile;
+	private String code;
 }

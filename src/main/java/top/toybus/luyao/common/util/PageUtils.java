@@ -12,20 +12,20 @@ import org.springframework.data.domain.Page;
  *
  */
 public class PageUtils {
-    /**
-     * JPA分页对象转
-     */
-    public static Map<String, Object> toMap(String listKey, Page<?> page) {
-	Map<String, Object> map = new HashMap<>();
-	map.put(listKey, page.getContent());
-	Map<String, Object> pager = new HashMap<>();
-	pager.put("page", page.getNumber());
-	pager.put("size", page.getSize());
-	pager.put("total", page.getTotalElements());
-	pager.put("totalPages", page.getTotalPages());
-	pager.put("first", page.isFirst());
-	pager.put("last", page.isLast());
-	map.put("pager", pager);
-	return map;
-    }
+	/**
+	 * JPA分页对象转
+	 */
+	public static Map<String, Object> toMap(String listKey, Page<?> page) {
+		Map<String, Object> map = new HashMap<>();
+		map.put(listKey, page.getContent());
+		Map<String, Object> pager = new HashMap<>();
+		pager.put("page", page.getNumber());
+		pager.put("size", page.getSize());
+		pager.put("total", page.getTotalElements());
+		pager.put("totalPages", page.getTotalPages());
+		pager.put("first", page.isFirst());
+		pager.put("last", page.isLast());
+		map.put("pager", pager);
+		return map;
+	}
 }

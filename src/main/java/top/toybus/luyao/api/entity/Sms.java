@@ -19,21 +19,21 @@ import lombok.Data;
 @Table(name = "tb_sms")
 @SuppressWarnings("serial")
 public class Sms implements Serializable {
-    @Id
-    @GeneratedValue
-    private Long id;
+	@Id
+	@GeneratedValue
+	private Long id;
 
-    private String mobile;
+	private String mobile;
 
-    private String code;
+	private String code;
 
-    private String content;
+	private String content;
 
-    private Integer status;
+	private Integer status;
 
-    @Column(name = "create_time")
-    private Date createTime;
+	@Column(name = "create_time")
+	private Date createTime;
 
-    @Column(name = "update_time")
-    private Date updateTime;
+	@Column(name = "update_time")
+	private Date updateTime;
 }
