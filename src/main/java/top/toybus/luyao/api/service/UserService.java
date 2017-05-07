@@ -1,7 +1,9 @@
 package top.toybus.luyao.api.service;
 
 import java.math.BigDecimal;
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import top.toybus.luyao.api.entity.Sms;
 import top.toybus.luyao.api.entity.User;
+import top.toybus.luyao.api.entity.UserRide;
 import top.toybus.luyao.api.formbean.UserForm;
 import top.toybus.luyao.api.repository.SmsRepository;
 import top.toybus.luyao.api.repository.UserRepository;
@@ -35,13 +38,13 @@ public class UserService {
 		ResData resData = this.verifyCode(userForm);
 		if (resData.getSc() == 0) {
 			// 添加用户到数据库
-
-			User user = userRepository.findFirstByMobile(userForm.getMobile());
+			User user = userRepository.findUserByMobile(userForm.getMobile());
 			if (user == null) {
 				User newUser = new User();
 				newUser.setMobile(userForm.getMobile());
-				newUser.setToken(UUIDUtils.randUUID());
+				newUser.setToken(UUIDUtils.randUUID()); // 产生注册后令牌
 				newUser.setBalance(new BigDecimal("0.00"));
+				newUser.setOwner(false);
 				newUser.setStatus(0);
 				newUser.setCreateTime(new Date());
 				newUser.setUpdateTime(new Date());
@@ -76,6 +79,7 @@ public class UserService {
 				resData.setMsg("验证码不正确");
 			} else if (new Date().getTime() - sms.getCreateTime().getTime() > smsExpirationTime) { // 10分钟超时
 				sms.setStatus(2); // 更新短信状态为已过期
+
 				resData.setSc(3);
 				resData.setMsg("验证码已过期");
 			} else {
@@ -91,15 +95,15 @@ public class UserService {
 	public ResData loginUser(UserForm userForm) {
 		ResData resData = this.verifyCode(userForm);
 		if (resData.getSc() == 0) {
-			// 更新用户状态为已登录
-			User user = userRepository.findFirstByMobile(userForm.getMobile());
-			if (user.getStatus() == 0) {
+			User user = userRepository.findUserByToken(userForm.getToken());
+			if (user == null) {
+				return resData.setSc(4).setMsg("登录令牌无效"); // 令牌无效
+			} else if (user.getStatus() == 0) { // 更新用户状态为已登录
+				user.setToken(UUIDUtils.randUUID()); // 产生新的令牌
 				user.setStatus(1); // 已登录
 				user.setUpdateTime(new Date());
-				user.setToken(UUIDUtils.randUUID()); // 更新token
 			} else if (user.getStatus() == 1) {
-				resData.setSc(1);
-				resData.setMsg("用户已经登录");
+				resData.setSc(5).setMsg("用户已经登录");
 			}
 
 			resData.put("user", user);
@@ -112,12 +116,22 @@ public class UserService {
 	 */
 	public ResData getUser(UserForm userForm) {
 		ResData resData = ResData.get();
-		User user = null;
-		if (StringUtils.isNotBlank(userForm.getMobile())) {
-			user = userRepository.findFirstByMobile(userForm.getMobile());
-		}
-		resData.put("user", user);
+		User loginUser = userForm.getLoginUser();
+		List<UserRide> userRideList = userRepository.findUserRideListByUser(loginUser);
+		loginUser.setUserRideList(userRideList);
+		resData.put("user", loginUser);
 		return resData;
+	}
+
+	/**
+	 * 获得登录的用户
+	 */
+	public User getLoginUser(String token) {
+		User user = userRepository.findUserByToken(token);
+		if (user != null) {
+			user.setUserRideList(Collections.emptyList()); // 关闭级联userRideList查询
+		}
+		return user;
 	}
 
 }

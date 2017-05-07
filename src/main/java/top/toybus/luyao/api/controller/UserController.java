@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import top.toybus.luyao.api.annotation.LoginRequired;
 import top.toybus.luyao.api.formbean.UserForm;
 import top.toybus.luyao.api.service.UserService;
 import top.toybus.luyao.common.bean.ResData;
@@ -38,6 +39,7 @@ public class UserController {
 	/**
 	 * 用户信息
 	 */
+	@LoginRequired
 	@RequestMapping("/info")
 	public ResData info(UserForm userForm) {
 		ResData resData = userService.getUser(userForm);

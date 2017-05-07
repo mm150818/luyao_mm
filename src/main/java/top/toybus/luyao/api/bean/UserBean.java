@@ -11,6 +11,6 @@ public interface UserBean {
 
 	Integer getStatus();
 
-	@Value("#{target.userCarList.![car.name]}")
-	List<String> getCarList();
+	@Value("#{target.userRideList.![ride.name]}")
+	List<String> getRideList();
 }

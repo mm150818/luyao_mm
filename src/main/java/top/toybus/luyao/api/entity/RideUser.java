@@ -21,18 +21,17 @@ import lombok.Data;
  */
 @Data
 @Entity
-@Table(name = "tb_user_car")
+@Table(name = "tb_user_ride")
 @SuppressWarnings("serial")
-public class CarUser implements Serializable {
+public class RideUser implements Serializable {
 	@Id
 	@GeneratedValue
 	private Long id;
 
-	@Column(name = "car_id")
-	private Long carId;
+	@Column(name = "ride_id")
+	private Long rideId;
 
-	// @JsonUnwrapped
-	@JsonIgnoreProperties("userCarList")
+	@JsonIgnoreProperties("userRideList")
 	@ManyToOne
 	@JoinColumn(name = "user_id")
 	private User user;

@@ -13,7 +13,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import top.toybus.luyao.api.bean.UserBean;
 import top.toybus.luyao.api.entity.User;
 import top.toybus.luyao.api.repository.UserRepository;
 
@@ -34,10 +33,10 @@ public class CommonTests {
 
 	@Test
 	public void test2() throws Exception {
-		UserBean userBean = userRepository.findById(1L);
+//		UserBean userBean = userRepository.findById(1L);
 		ObjectMapper om = new ObjectMapper();
-		String string = om.writeValueAsString(userBean);
-		System.out.println(string);
+//		String string = om.writeValueAsString(userBean);
+//		System.out.println(string);
 	}
 
 }

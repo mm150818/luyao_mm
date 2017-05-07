@@ -27,6 +27,11 @@ public class ResData {
 		this.sc = sc;
 	}
 
+	public ResData(int sc, String msg) {
+		this.sc = sc;
+		this.msg = msg;
+	}
+
 	public static ResData get() {
 		return new ResData();
 	}

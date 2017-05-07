@@ -19,9 +19,11 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 
 /**
- * 用户
+ * 用户(乘客、车主)
  */
 @Data
+//@ToString(exclude = { "userRideList" })
+//@JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
 @Entity
 @Table(name = "tb_user")
 @SuppressWarnings("serial")
@@ -31,14 +33,18 @@ public class User implements Serializable {
 	@GeneratedValue
 	private Long id;
 
-	@JsonIgnore
-	private String token;
-
 	private String mobile;
+
+	private String token;
 
 	private String nickname;
 
 	private BigDecimal balance;
+
+	private Boolean owner;
+
+	@Column(name = "ride_no")
+	private String rideNo;
 
 	private Integer status;
 
@@ -51,13 +57,8 @@ public class User implements Serializable {
 	private Date updateTime;
 
 	@OneToMany
-	@JoinColumn(name = "user_id")
-	private List<UserCar> userCarList = new ArrayList<>();
-
-	/*@JsonIgnore
-	@ManyToMany
-	@JoinTable(name = "tb_user_car", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "car_id"))
-	private List<Car> carList = new ArrayList<>();*/
+	@JoinColumn(name = "user_id", updatable = false)
+	private List<UserRide> userRideList = new ArrayList<>();
 
 	public String getBalance() {
 		return balance == null ? null : balance.toString();

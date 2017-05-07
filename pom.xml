@@ -124,6 +124,13 @@
 					<fork>true</fork>
 					<mainClass>top.toybus.luyao.BootApplication</mainClass>
 				</configuration>
+				<!-- <dependencies>
+	        <dependency>
+						<groupId>org.springframework</groupId>
+						<artifactId>springloaded</artifactId>
+						<version>1.2.7.RELEASE</version>
+					</dependency>
+		    </dependencies> -->
 				<executions>
 					<execution>
 						<goals>

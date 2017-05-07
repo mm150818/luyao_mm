@@ -28,7 +28,7 @@ public class SmsService {
 	/**
 	 * 发送短信验证码
 	 */
-	public ResData sendVerifyCode(SmsForm smsForm) {
+	public ResData sendCode(SmsForm smsForm) {
 		ResData resData = new ResData();
 		if (StringUtils.isBlank(smsForm.getMobile())) {
 			resData.setSc(ResData.SC_PARAM_ERROR);
@@ -38,7 +38,6 @@ public class SmsService {
 			newSms.setMobile(smsForm.getMobile());
 			// 发送短信
 			String code = RandomStringUtils.randomNumeric(4);
-			System.out.println(code);
 			newSms.setCode(code);
 			newSms.setContent(smsTemplateVerifyCode.replace("{code}", code));
 			newSms.setStatus(0);
