@@ -19,7 +19,7 @@ public class RideController {
 	private RideService rideService;
 
 	/**
-	 * 发布
+	 * 发布车次
 	 */
 	@LoginRequired
 	@RequestMapping("/publish")
@@ -29,7 +29,7 @@ public class RideController {
 	}
 
 	/**
-	 * 列表
+	 * 车次列表
 	 */
 	@RequestMapping("/list")
 	public ResData list(RideForm rideForm) {
@@ -38,11 +38,32 @@ public class RideController {
 	}
 
 	/**
-	 * 详情
+	 * 车次详情
 	 */
 	@RequestMapping("/detail")
 	public ResData detail(RideForm rideForm) {
 		ResData resData = rideService.getRideDetail(rideForm);
 		return resData;
 	}
+
+	/**
+	 * 新增车次模板
+	 */
+	@LoginRequired
+	@RequestMapping("/addTemplate")
+	public ResData addTemplate(RideForm rideForm) {
+		ResData resData = rideService.addRideTemplate(rideForm);
+		return resData;
+	}
+
+	/**
+	 * 车次模板列表
+	 */
+	@LoginRequired
+	@RequestMapping("/listTemplate")
+	public ResData listTemplate(RideForm rideForm) {
+		ResData resData = rideService.listRideTemplate(rideForm);
+		return resData;
+	}
+
 }

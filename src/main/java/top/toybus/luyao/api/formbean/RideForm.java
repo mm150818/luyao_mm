@@ -15,6 +15,8 @@ import lombok.ToString;
 public class RideForm extends BaseForm {
 	private Long id;
 
+	private Boolean template;
+
 	private String name;
 
 	private String imgUrl;

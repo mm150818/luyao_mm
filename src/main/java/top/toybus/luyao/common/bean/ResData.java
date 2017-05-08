@@ -10,25 +10,25 @@ import java.util.Map;
  */
 public class ResData {
 	/** 用户已经存在 */
-	public static final int SC_USER_EXISTS = 1000;
+	public static final int C_USER_EXISTS = 1000;
 	/** 参数错误 */
-	public static final int SC_PARAM_ERROR = 1001;
+	public static final int C_PARAM_ERROR = 1001;
 	/** 未登录 */
-	public static final int SC_NOT_LOGIN = 1002;
+	public static final int C_NOT_LOGIN = 1002;
 
-	private int sc = 0; // 状态码，0：OK，1-99：错误状态码说明，1000-：通用错误码
+	private int code = 0; // 状态码，0：OK，1-99：错误状态码说明，1000-：通用错误码
 	private String msg = "OK"; // 返回码说明
 	private Map<String, Object> data = new HashMap<>(); // 数据
 
 	public ResData() {
 	}
 
-	public ResData(int sc) {
-		this.sc = sc;
+	public ResData(int code) {
+		this.code = code;
 	}
 
-	public ResData(int sc, String msg) {
-		this.sc = sc;
+	public ResData(int code, String msg) {
+		this.code = code;
 		this.msg = msg;
 	}
 
@@ -36,12 +36,12 @@ public class ResData {
 		return new ResData();
 	}
 
-	public int getSc() {
-		return sc;
+	public int getCode() {
+		return code;
 	}
 
-	public ResData setSc(int sc) {
-		this.sc = sc;
+	public ResData setCode(int code) {
+		this.code = code;
 		return this;
 	}
 

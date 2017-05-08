@@ -35,8 +35,8 @@ public class UserService {
 	 * 注册用户
 	 */
 	public ResData registUser(UserForm userForm) {
-		ResData resData = this.verifyCode(userForm);
-		if (resData.getSc() == 0) {
+		ResData resData = this.verifyCodeForm(userForm);
+		if (resData.getCode() == 0) {
 			// 添加用户到数据库
 			User user = userRepository.findUserByMobile(userForm.getMobile());
 			if (user == null) {
@@ -52,7 +52,7 @@ public class UserService {
 
 				resData.put("user", user);
 			} else {
-				resData.setSc(ResData.SC_USER_EXISTS);
+				resData.setCode(ResData.C_USER_EXISTS);
 				resData.setMsg("该手机号已经存在");
 			}
 		}
@@ -60,27 +60,27 @@ public class UserService {
 	}
 
 	// 检查校验码
-	private ResData verifyCode(UserForm userForm) {
+	private ResData verifyCodeForm(UserForm userForm) {
 		ResData resData = new ResData();
 		if (StringUtils.isBlank(userForm.getMobile())) {
-			resData.setSc(ResData.SC_PARAM_ERROR);
+			resData.setCode(ResData.C_PARAM_ERROR);
 			resData.setMsg("请输入手机号");
 		} else if (StringUtils.isBlank(userForm.getCode())) {
-			resData.setSc(ResData.SC_PARAM_ERROR);
+			resData.setCode(ResData.C_PARAM_ERROR);
 			resData.setMsg("请输入验证码");
 		} else {
 			// 获得最近发送的验证码
 			Sms sms = smsRepository.findFirstByMobileAndStatusOrderByIdDesc(userForm.getMobile(), 0);
 			if (sms == null) {
-				resData.setSc(1);
+				resData.setCode(1);
 				resData.setMsg("请发送短信验证码");
 			} else if (!sms.getCode().equals(userForm.getCode())) {
-				resData.setSc(2);
+				resData.setCode(2);
 				resData.setMsg("验证码不正确");
 			} else if (new Date().getTime() - sms.getCreateTime().getTime() > smsExpirationTime) { // 10分钟超时
 				sms.setStatus(2); // 更新短信状态为已过期
 
-				resData.setSc(3);
+				resData.setCode(3);
 				resData.setMsg("验证码已过期");
 			} else {
 				sms.setStatus(1); // 更新短信状态为已使用
@@ -93,17 +93,17 @@ public class UserService {
 	 * 用户登录
 	 */
 	public ResData loginUser(UserForm userForm) {
-		ResData resData = this.verifyCode(userForm);
-		if (resData.getSc() == 0) {
+		ResData resData = this.verifyCodeForm(userForm);
+		if (resData.getCode() == 0) {
 			User user = userRepository.findUserByToken(userForm.getToken());
 			if (user == null) {
-				return resData.setSc(4).setMsg("登录令牌无效"); // 令牌无效
+				return resData.setCode(4).setMsg("登录令牌无效"); // 令牌无效
 			} else if (user.getStatus() == 0) { // 更新用户状态为已登录
 				user.setToken(UUIDUtils.randUUID()); // 产生新的令牌
 				user.setStatus(1); // 已登录
 				user.setUpdateTime(new Date());
 			} else if (user.getStatus() == 1) {
-				resData.setSc(5).setMsg("用户已经登录");
+				resData.setCode(5).setMsg("用户已经登录");
 			}
 
 			resData.put("user", user);

@@ -40,6 +40,6 @@ public class LoginAdvice {
 	 */
 	@ExceptionHandler(NotLoginException.class)
 	public ResData handlerNotLoginException(NotLoginException e) {
-		return new ResData(ResData.SC_NOT_LOGIN, e.getMessage());
+		return new ResData(ResData.C_NOT_LOGIN, e.getMessage());
 	}
 }

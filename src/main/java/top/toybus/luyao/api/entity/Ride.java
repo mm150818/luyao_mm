@@ -22,11 +22,9 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 
 /**
- * 顺风车
+ * 顺风车次
  */
 @Data
-//@ToString(exclude = { "rideUserList", "user" })
-@JsonIgnoreProperties({ "user.token" })
 @Entity
 @Table(name = "tb_ride")
 @SuppressWarnings("serial")
@@ -34,6 +32,8 @@ public class Ride implements Serializable {
 	@Id
 	@GeneratedValue
 	private Long id;
+
+	private Boolean template;
 
 	@JsonIgnoreProperties("userRideList")
 	@ManyToOne
@@ -74,7 +74,7 @@ public class Ride implements Serializable {
 	private Date updateTime;
 
 	@OneToMany
-	@JoinColumn(name = "ride_id")
+	@JoinColumn(name = "ride_id", updatable = false)
 	private List<RideUser> rideUserList = new ArrayList<>();
 
 	public String getReward() {

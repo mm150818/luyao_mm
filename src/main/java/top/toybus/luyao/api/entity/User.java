@@ -46,6 +46,9 @@ public class User implements Serializable {
 	@Column(name = "ride_no")
 	private String rideNo;
 
+	@Column(name = "ride_template_id")
+	private Long rideTemplateId;
+
 	private Integer status;
 
 	@JsonIgnore

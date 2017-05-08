@@ -31,7 +31,7 @@ public class SmsService {
 	public ResData sendCode(SmsForm smsForm) {
 		ResData resData = new ResData();
 		if (StringUtils.isBlank(smsForm.getMobile())) {
-			resData.setSc(ResData.SC_PARAM_ERROR);
+			resData.setCode(ResData.C_PARAM_ERROR);
 			resData.setMsg("请输入手机号");
 		} else {
 			Sms newSms = new Sms();
