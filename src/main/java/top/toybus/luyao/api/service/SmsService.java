@@ -22,8 +22,8 @@ public class SmsService {
 
 	@Value("${sms.expiration.time}")
 	private int smsExpirationTime = 10 * 60 * 1000;
-	@Value("${sms.template.verifyCode}")
-	private String smsTemplateVerifyCode = "【路遥】验证码：{code}。10分钟内有效。";
+	@Value("${sms.template.code}")
+	private String smsTemplateCode = "【路遥】验证码：{code}。10分钟内有效。";
 
 	/**
 	 * 发送短信验证码
@@ -39,7 +39,7 @@ public class SmsService {
 			// 发送短信
 			String code = RandomStringUtils.randomNumeric(4);
 			newSms.setCode(code);
-			newSms.setContent(smsTemplateVerifyCode.replace("{code}", code));
+			newSms.setContent(smsTemplateCode.replace("{code}", code));
 			newSms.setStatus(0);
 			newSms.setCreateTime(new Date());
 			newSms.setUpdateTime(new Date());

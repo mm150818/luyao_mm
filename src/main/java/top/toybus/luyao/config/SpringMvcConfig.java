@@ -23,6 +23,7 @@ public class SpringMvcConfig extends WebMvcConfigurerAdapter {
 
 	@Override
 	public void addInterceptors(InterceptorRegistry registry) {
+		// 【需要登录】拦截器
 		registry.addInterceptor(loginInterceptor());
 
 		super.addInterceptors(registry);

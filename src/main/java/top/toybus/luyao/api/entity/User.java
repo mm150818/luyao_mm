@@ -17,12 +17,13 @@ import javax.persistence.Table;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import lombok.Data;
+import lombok.ToString;
 
 /**
  * 用户(乘客、车主)
  */
 @Data
-//@ToString(exclude = { "userRideList" })
+@ToString(exclude = { "userRideList" })
 //@JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
 @Entity
 @Table(name = "tb_user")
