@@ -1,7 +1,7 @@
 package top.toybus.luyao.api.service;
 
+import java.time.LocalDateTime;
 import java.util.Collections;
-import java.util.Date;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -34,8 +34,8 @@ public class RideService {
 				BeanUtils.copyProperties(rideForm, newRide);
 				newRide.setTemplate(false);
 				newRide.setUser(rideForm.getLoginUser());
-				newRide.setCreateTime(new Date());
-				newRide.setUpdateTime(new Date());
+				newRide.setCreateTime(LocalDateTime.now());
+				newRide.setUpdateTime(LocalDateTime.now());
 				rideRepository.save(newRide);
 
 			} catch (Exception e) {
@@ -107,8 +107,8 @@ public class RideService {
 				BeanUtils.copyProperties(rideForm, newRide);
 				newRide.setTemplate(true);
 				newRide.setUser(rideForm.getLoginUser());
-				newRide.setCreateTime(new Date());
-				newRide.setUpdateTime(new Date());
+				newRide.setCreateTime(LocalDateTime.now());
+				newRide.setUpdateTime(LocalDateTime.now());
 				rideRepository.save(newRide);
 			} catch (Exception e) {
 				resData.setCode(1).setMsg("车次模板新增失败");

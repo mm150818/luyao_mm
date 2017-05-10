@@ -1,13 +1,12 @@
 package top.toybus.luyao.api.service;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,6 +14,7 @@ import top.toybus.luyao.api.entity.Sms;
 import top.toybus.luyao.api.entity.User;
 import top.toybus.luyao.api.entity.UserRide;
 import top.toybus.luyao.api.formbean.UserForm;
+import top.toybus.luyao.api.properties.SmsProperties;
 import top.toybus.luyao.api.repository.SmsRepository;
 import top.toybus.luyao.api.repository.UserRepository;
 import top.toybus.luyao.common.bean.ResData;
@@ -28,8 +28,8 @@ public class UserService {
 	@Autowired
 	private SmsRepository smsRepository;
 
-	@Value("${sms.expiration.time}")
-	private int smsExpirationTime = 10 * 60 * 1000;
+	@Autowired
+	private SmsProperties smsProperties;
 
 	/**
 	 * 注册用户
@@ -46,8 +46,8 @@ public class UserService {
 				newUser.setBalance(new BigDecimal("0.00"));
 				newUser.setOwner(false);
 				newUser.setStatus(0);
-				newUser.setCreateTime(new Date());
-				newUser.setUpdateTime(new Date());
+				newUser.setCreateTime(LocalDateTime.now());
+				newUser.setUpdateTime(LocalDateTime.now());
 				user = userRepository.save(newUser);
 
 				resData.put("user", user);
@@ -77,7 +77,7 @@ public class UserService {
 			} else if (!sms.getCode().equals(userForm.getCode())) {
 				resData.setCode(2);
 				resData.setMsg("验证码不正确");
-			} else if (new Date().getTime() - sms.getCreateTime().getTime() > smsExpirationTime) { // 10分钟超时
+			} else if (LocalDateTime.now().isAfter(sms.getCreateTime().plusSeconds(smsProperties.getValidSeconds()))) { // 10分钟超时
 				sms.setStatus(2); // 更新短信状态为已过期
 
 				resData.setCode(3);
@@ -101,7 +101,7 @@ public class UserService {
 			} else if (user.getStatus() == 0) { // 更新用户状态为已登录
 				user.setToken(UUIDUtils.randUUID()); // 产生新的令牌
 				user.setStatus(1); // 已登录
-				user.setUpdateTime(new Date());
+				user.setUpdateTime(LocalDateTime.now());
 			} else if (user.getStatus() == 1) {
 				resData.setCode(5).setMsg("用户已经登录");
 			}

@@ -1,7 +1,7 @@
 package top.toybus.luyao.api.entity;
 
 import java.io.Serializable;
-import java.util.Date;
+import java.time.LocalDateTime;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -32,8 +32,8 @@ public class Sms implements Serializable {
 	private Integer status;
 
 	@Column(name = "create_time")
-	private Date createTime;
+	private LocalDateTime createTime;
 
 	@Column(name = "update_time")
-	private Date updateTime;
+	private LocalDateTime updateTime;
 }

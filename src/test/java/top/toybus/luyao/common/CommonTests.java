@@ -1,5 +1,7 @@
 package top.toybus.luyao.common;
 
+import java.time.LocalDateTime;
+
 import javax.transaction.Transactional;
 
 import org.junit.Test;
@@ -9,9 +11,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import top.toybus.luyao.api.entity.User;
 import top.toybus.luyao.api.repository.UserRepository;
@@ -19,6 +21,7 @@ import top.toybus.luyao.api.repository.UserRepository;
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @Transactional
+@ActiveProfiles("dev")
 public class CommonTests {
 
 	@Autowired
@@ -33,10 +36,12 @@ public class CommonTests {
 
 	@Test
 	public void test2() throws Exception {
-//		UserBean userBean = userRepository.findById(1L);
-		ObjectMapper om = new ObjectMapper();
-//		String string = om.writeValueAsString(userBean);
-//		System.out.println(string);
+		User user = userRepository.findOne(1L);
+		System.out.println(Jackson2ObjectMapperBuilder.json().build().writeValueAsString(user));
+	}
+
+	public static void main(String[] args) {
+		System.out.println(LocalDateTime.now());
 	}
 
 }

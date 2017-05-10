@@ -2,8 +2,8 @@ package top.toybus.luyao.api.entity;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import javax.persistence.Column;
@@ -54,11 +54,11 @@ public class User implements Serializable {
 
 	@JsonIgnore
 	@Column(name = "create_time")
-	private Date createTime;
+	private LocalDateTime createTime;
 
 	@JsonIgnore
 	@Column(name = "update_time")
-	private Date updateTime;
+	private LocalDateTime updateTime;
 
 	@OneToMany
 	@JoinColumn(name = "user_id", updatable = false)

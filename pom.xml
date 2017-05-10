@@ -16,7 +16,7 @@
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<java.version>1.8</java.version>
 		<druid.version>1.0.29</druid.version>
-		<log4jdbc.version>1.2</log4jdbc.version>
+		<log4jdbc.version>0.2.7</log4jdbc.version>
 		<commons-collections4.version>4.1</commons-collections4.version>
 		<commons-lang3.version>3.5</commons-lang3.version>
 	</properties>
@@ -61,6 +61,11 @@
 			<artifactId>hibernate-java8</artifactId>
 		</dependency>
 		<dependency>
+		    <groupId>com.fasterxml.jackson.datatype</groupId>
+		    <artifactId>jackson-datatype-jsr310</artifactId>
+		</dependency>
+		
+		<dependency>
        <groupId>mysql</groupId>
        <artifactId>mysql-connector-java</artifactId>
     </dependency>
@@ -70,8 +75,8 @@
       <version>${druid.version}</version>  
     </dependency>
 		<dependency>
-			<groupId>com.googlecode.log4jdbc</groupId>
-			<artifactId>log4jdbc</artifactId>
+			<groupId>org.lazyluke</groupId>
+			<artifactId>log4jdbc-remix</artifactId>
 			<version>${log4jdbc.version}</version>
 		</dependency>
 		
