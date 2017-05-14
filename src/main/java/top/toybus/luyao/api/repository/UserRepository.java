@@ -1,11 +1,11 @@
 package top.toybus.luyao.api.repository;
 
-import java.util.List;
+import java.time.LocalDateTime;
 
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
 import top.toybus.luyao.api.entity.User;
-import top.toybus.luyao.api.entity.UserRide;
 import top.toybus.luyao.common.repository.BaseRepository;
 
 public interface UserRepository extends BaseRepository<User, Long> {
@@ -26,11 +26,17 @@ public interface UserRepository extends BaseRepository<User, Long> {
 	User findUserByToken(String token);
 
 	/**
-	 * 查询用户的订车列表
-	 * 
-	 * @param user
-	 * @return List<UserRide>
+	 * 修改密码
 	 */
-	@Query("select u.userRideList from User u where u = ?1")
-	List<UserRide> findUserRideListByUser(User user);
+	@Modifying
+	@Query("update User u set u.password = ?2, u.updateTime = ?3 where u.id = ?1")
+	int updateUserPwdById(Long id, String password, LocalDateTime updateTime);
+
+	/**
+	 * 修改密码
+	 */
+	@Modifying
+	@Query("update User u set u.password = ?2, u.updateTime = ?3 where u.mobile = ?1")
+	int updateUserPwdByMobile(String mobile, String password, LocalDateTime updateTime);
+
 }

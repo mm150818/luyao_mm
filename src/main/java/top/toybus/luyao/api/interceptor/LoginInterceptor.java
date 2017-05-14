@@ -38,10 +38,13 @@ public class LoginInterceptor extends HandlerInterceptorAdapter {
 			}
 			if (loginUser == null) {
 				throw new NotLoginException("登录令牌无效");
-			} else if (loginUser.getStatus() != 1) {
+			} else if (loginUser.getStatus() == 0) {
 				throw new NotLoginException("请先登录");
+			} else if (loginUser.getStatus() == 1) { // 正常登录
+				request.setAttribute(LoginRequired.LOGIN_USER, loginUser);
+			} else if (loginUser.getStatus() == 2) {
+				throw new NotLoginException("用户已经被冻结");
 			}
-			request.setAttribute(LoginRequired.LOGIN_USER, loginUser);
 		}
 		return super.preHandle(request, response, handler);
 	}

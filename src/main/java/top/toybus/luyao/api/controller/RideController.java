@@ -29,6 +29,26 @@ public class RideController {
 	}
 
 	/**
+	 * 删除车次
+	 */
+	@LoginRequired
+	@RequestMapping("/delete")
+	public ResData delete(RideForm rideForm) {
+		ResData resData = rideService.deleteRide(rideForm);
+		return resData;
+	}
+
+	/**
+	 * 修改车次
+	 */
+	@LoginRequired
+	@RequestMapping("/update")
+	public ResData update(RideForm rideForm) {
+		ResData resData = rideService.updateRide(rideForm);
+		return resData;
+	}
+
+	/**
 	 * 车次列表
 	 */
 	@RequestMapping("/list")
@@ -53,6 +73,26 @@ public class RideController {
 	@RequestMapping("/addTemplate")
 	public ResData addTemplate(RideForm rideForm) {
 		ResData resData = rideService.addRideTemplate(rideForm);
+		return resData;
+	}
+
+	/**
+	 * 删除车次模板
+	 */
+	@LoginRequired
+	@RequestMapping("/deleteTemplate")
+	public ResData deleteTemplate(RideForm rideForm) {
+		ResData resData = rideService.deleteTemplate(rideForm);
+		return resData;
+	}
+
+	/**
+	 * 修改车次模板
+	 */
+	@LoginRequired
+	@RequestMapping("/updateTemplate")
+	public ResData updateTemplate(RideForm rideForm) {
+		ResData resData = rideService.updateTemplate(rideForm);
 		return resData;
 	}
 

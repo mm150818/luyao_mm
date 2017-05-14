@@ -12,7 +12,6 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import lombok.Data;
 
@@ -31,7 +30,7 @@ public class UserRide implements Serializable {
 	@Column(name = "user_id")
 	private Long userId;
 
-	@JsonIgnoreProperties({ "user", "rideUserList" })
+//	@JsonIgnoreProperties({ "owner" })
 	@ManyToOne
 	@JoinColumn(name = "ride_id")
 	private Ride ride;

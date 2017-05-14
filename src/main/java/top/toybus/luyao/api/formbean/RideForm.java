@@ -1,13 +1,16 @@
 package top.toybus.luyao.api.formbean;
 
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.springframework.format.annotation.DateTimeFormat;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
+import top.toybus.luyao.api.entity.RideVia;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -22,7 +25,9 @@ public class RideForm extends BaseForm {
 	private String imgUrl;
 
 	@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-	private Date time;
+	private LocalDateTime time;
+
+	private String address;
 
 	private BigDecimal reward;
 
@@ -30,13 +35,7 @@ public class RideForm extends BaseForm {
 
 	private Integer remainSeats;
 
-	private String startPoint;
-
-	private String endPoint;
-
-	private String via1;
-
-	private String via2;
+	private List<RideVia> rideViaList = new ArrayList<>();
 
 	private int page = 0;
 

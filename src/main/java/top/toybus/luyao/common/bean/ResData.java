@@ -3,14 +3,14 @@ package top.toybus.luyao.common.bean;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 /**
  * 返回数据
  * 
  * @author sunxg
  */
 public class ResData {
-	/** 用户已经存在 */
-	public static final int C_USER_EXISTS = 1000;
 	/** 参数错误 */
 	public static final int C_PARAM_ERROR = 1001;
 	/** 未登录 */
@@ -30,6 +30,11 @@ public class ResData {
 	public ResData(int code, String msg) {
 		this.code = code;
 		this.msg = msg;
+	}
+
+	@JsonIgnore
+	public boolean isOk() {
+		return code == 0;
 	}
 
 	public static ResData get() {

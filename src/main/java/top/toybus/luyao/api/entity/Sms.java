@@ -25,9 +25,8 @@ public class Sms implements Serializable {
 
 	private String mobile;
 
-	private String code;
-
-	private String content;
+	@Column(name = "verify_code")
+	private String verifyCode;
 
 	private Integer status;
 

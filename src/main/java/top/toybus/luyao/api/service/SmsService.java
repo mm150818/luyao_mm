@@ -10,9 +10,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import top.toybus.luyao.api.entity.Sms;
 import top.toybus.luyao.api.formbean.SmsForm;
-import top.toybus.luyao.api.properties.SmsProperties;
 import top.toybus.luyao.api.repository.SmsRepository;
 import top.toybus.luyao.common.bean.ResData;
+import top.toybus.luyao.common.helper.SmsHelper;
+import top.toybus.luyao.common.util.ValidatorUtils;
 
 @Service
 @Transactional
@@ -21,29 +22,32 @@ public class SmsService {
 	private SmsRepository smsRepository;
 
 	@Autowired
-	private SmsProperties smsProperties;
+	private SmsHelper smsHelper;
 
 	/**
 	 * 发送短信验证码
 	 */
-	public ResData sendCode(SmsForm smsForm) {
+	public ResData sendVerifyCode(SmsForm smsForm) {
 		ResData resData = new ResData();
 		if (StringUtils.isBlank(smsForm.getMobile())) {
-			resData.setCode(ResData.C_PARAM_ERROR);
-			resData.setMsg("请输入手机号");
+			resData.setCode(ResData.C_PARAM_ERROR).setMsg("请输入手机号");
+		} else if (ValidatorUtils.isNotMobile(smsForm.getMobile())) {
+			resData.setCode(ResData.C_PARAM_ERROR).setMsg("手机号格式不正确");
 		} else {
-			Sms newSms = new Sms();
-			newSms.setMobile(smsForm.getMobile());
-			// 发送短信
-			String code = RandomStringUtils.randomNumeric(4);
-			newSms.setCode(code);
-			newSms.setContent(smsProperties.getCodeTemplate().replace("{code}", code).replace("{seconds}",
-					String.valueOf(smsProperties.getValidSeconds() / 60)));
-			newSms.setStatus(0);
-			newSms.setCreateTime(LocalDateTime.now());
-			newSms.setUpdateTime(LocalDateTime.now());
+			String verifyCode = RandomStringUtils.randomNumeric(4); // 短信验证码
+			boolean isOk = smsHelper.sendVerifyCodeMsg(smsForm.getMobile(), verifyCode); // 发送短信验证码
+			if (isOk) {
+				Sms newSms = new Sms();
+				newSms.setMobile(smsForm.getMobile());
+				newSms.setVerifyCode(verifyCode);
+				newSms.setStatus(0);
+				newSms.setCreateTime(LocalDateTime.now());
+				newSms.setUpdateTime(LocalDateTime.now());
 
-			smsRepository.save(newSms);
+				smsRepository.save(newSms);
+			} else {
+				resData.setCode(1).setMsg("验证码短信发送失败，请稍后再试"); // err1
+			}
 		}
 		return resData;
 	}

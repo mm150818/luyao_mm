@@ -12,6 +12,20 @@ public class UserForm extends BaseForm {
 
 	private String mobile;
 
-	private String code;
+	private String oldPassword;
+
+	private String password;
+
+	private String verifyCode;
+
+	private Long rideId;
+
+	private int seats;
+
+	private String nickname;
+
+	private String vehicleNo;
+
+	private Long rideTemplateId;
 
 }

@@ -20,9 +20,9 @@ public class SmsController {
 	/**
 	 * 发送登录、注册短信验证码
 	 */
-	@RequestMapping("/sendCode")
-	public ResData sendCode(SmsForm smsForm) {
-		ResData resData = smsService.sendCode(smsForm);
+	@RequestMapping("/sendVerifyCode")
+	public ResData sendVerifyCode(SmsForm smsForm) {
+		ResData resData = smsService.sendVerifyCode(smsForm);
 		return resData;
 	}
 }

@@ -13,6 +13,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import lombok.Data;
@@ -32,14 +33,14 @@ public class RideUser implements Serializable {
 	@Column(name = "ride_id")
 	private Long rideId;
 
-	@JsonIgnoreProperties("userRideList")
+	@JsonIgnoreProperties({ "owner", "balance", "vehicleNo", "rideTemplateId", "status" })
 	@ManyToOne
 	@JoinColumn(name = "user_id")
 	private User user;
 
 	private Integer seats;
 
-	@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+	@JsonIgnore
 	@Column(name = "create_time")
 	private LocalDateTime createTime;
 

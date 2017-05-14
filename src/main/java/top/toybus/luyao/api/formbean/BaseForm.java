@@ -5,7 +5,7 @@ import top.toybus.luyao.api.entity.User;
 
 @Data
 public abstract class BaseForm {
-	/** 登录的用户 */
+	/** 当前登录的用户 */
 	private User loginUser;
 
 	/**

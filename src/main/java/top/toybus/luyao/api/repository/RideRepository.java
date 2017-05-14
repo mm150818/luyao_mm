@@ -2,6 +2,7 @@ package top.toybus.luyao.api.repository;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.Query;
 
 import top.toybus.luyao.api.entity.Ride;
 import top.toybus.luyao.api.entity.User;
@@ -17,6 +18,19 @@ public interface RideRepository extends BaseRepository<Ride, Long> {
 	/**
 	 * 查询指定车主的车次模板
 	 */
-	Page<Ride> findAllByTemplateTrueAndUser(User user, Pageable pageable);
+	Page<Ride> findAllByTemplateTrueAndOwner(User owner, Pageable pageable);
+
+	/**
+	 * 查询今天发布的车次数
+	 */
+	@Query("select count(1) from Ride r where r.owner = ?1 and template = 0 and TO_DAYS(r.createTime) = TO_DAYS(NOW())")
+	long countByPubToday(User owner);
+
+	/**
+	 * 查询指定ID的车次模板是否存在
+	 */
+	boolean existsByTemplateTrueAndId(Long id);
+
+	Ride findOneByIdAndOwner(Long id, User loginUser);
 
 }

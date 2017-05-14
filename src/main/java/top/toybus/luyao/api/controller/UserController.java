@@ -45,4 +45,44 @@ public class UserController {
 		ResData resData = userService.getUser(userForm);
 		return resData;
 	}
+
+	/**
+	 * 用户信息修改
+	 */
+	@LoginRequired
+	@RequestMapping("/updateInfo")
+	public ResData updateInfo(UserForm userForm) {
+		ResData resData = userService.updateInfo(userForm);
+		return resData;
+	}
+
+	/**
+	 * 修改密码
+	 */
+	@LoginRequired
+	@RequestMapping("/updatePwd")
+	public ResData updatePwd(UserForm userForm) {
+		ResData resData = userService.updateUserPwd(userForm);
+		return resData;
+	}
+
+	/**
+	 * 找回密码
+	 */
+	@RequestMapping("/findPwd")
+	public ResData findPwd(UserForm userForm) {
+		ResData resData = userService.findUserPwd(userForm);
+		return resData;
+	}
+
+	/**
+	 * 用户订购车次
+	 */
+	@LoginRequired
+	@RequestMapping("/orderRide")
+	public ResData orderRide(UserForm userForm) {
+		ResData resData = userService.orderRide(userForm);
+		return resData;
+	}
+
 }

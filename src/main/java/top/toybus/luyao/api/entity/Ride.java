@@ -18,6 +18,8 @@ import javax.persistence.Table;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 import lombok.Data;
 
@@ -33,12 +35,13 @@ public class Ride implements Serializable {
 	@GeneratedValue
 	private Long id;
 
+	@JsonIgnore
 	private Boolean template;
 
-	@JsonIgnoreProperties("userRideList")
+	@JsonIgnoreProperties({ "owner", "balance", "rideTemplateId", "status" })
 	@ManyToOne
-	@JoinColumn(name = "user_id")
-	private User user;
+	@JoinColumn(name = "owner_id")
+	private User owner;
 
 	private String name;
 
@@ -48,6 +51,8 @@ public class Ride implements Serializable {
 	@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
 	private LocalDateTime time;
 
+	private String address;
+
 	private BigDecimal reward;
 
 	private Integer seats;
@@ -55,15 +60,11 @@ public class Ride implements Serializable {
 	@Column(name = "remain_seats")
 	private Integer remainSeats;
 
-	@Column(name = "start_point")
-	private String startPoint;
+	private Integer status;
 
-	@Column(name = "end_point")
-	private String endPoint;
-
-	private String via1;
-
-	private String via2;
+	@OneToMany
+	@JoinColumn(name = "ride_id", updatable = false)
+	private List<RideVia> rideViaList = new ArrayList<>();
 
 	@JsonIgnore
 	@Column(name = "create_time")
@@ -73,11 +74,12 @@ public class Ride implements Serializable {
 	@Column(name = "update_time")
 	private LocalDateTime updateTime;
 
+	@JsonInclude(Include.NON_NULL)
 	@OneToMany
 	@JoinColumn(name = "ride_id", updatable = false)
 	private List<RideUser> rideUserList = new ArrayList<>();
 
-	public String getReward() {
-		return reward == null ? null : reward.toString();
+	public List<RideUser> getRideUserList() {
+		return template ? null : rideUserList;
 	}
 }
