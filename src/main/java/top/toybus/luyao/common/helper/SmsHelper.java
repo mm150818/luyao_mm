@@ -48,8 +48,8 @@ public class SmsHelper {
 		if (log.isInfoEnabled()) {
 			log.info(String.format("发送短信至手机号：%s，模板代码：%s，模板参数：%s", mobile, tplCode, paramMap));
 		}
-		// 开发环境不发真正短信
-		if (environment.acceptsProfiles("dev")) {
+		// 非正式环境不发真正短信
+		if (environment.acceptsProfiles("!prod")) {
 			return true;
 		}
 		/**
@@ -74,7 +74,7 @@ public class SmsHelper {
 		// 3.1 设置发送短信的签名（SMSSignName）
 		smsAttributes.setFreeSignName(smsProperties.getSignName());
 		// 3.2 设置发送短信使用的模板（SMSTempateCode）
-		smsAttributes.setTemplateCode(smsProperties.getTplVerifyCode());
+		smsAttributes.setTemplateCode(tplCode);
 		// 3.3 设置发送短信所使用的模板中参数对应的值（在短信模板中定义的，没有可以不用设置）
 		if (MapUtils.isNotEmpty(paramMap)) {
 			paramMap.forEach((key, value) -> smsAttributes.setSmsParam(key, value));
@@ -121,7 +121,7 @@ public class SmsHelper {
 	 * @param verifyCode
 	 * @return
 	 */
-	public boolean sendVerifyCodeMsg(String mobile, String verifyCode) {
+	public boolean sendSmsVerifyCode(String mobile, String verifyCode) {
 		Map<String, String> paramMap = new HashMap<>();
 		paramMap.put("code", verifyCode);
 		paramMap.put("minutes", String.valueOf(smsProperties.getValidMinutes()));
