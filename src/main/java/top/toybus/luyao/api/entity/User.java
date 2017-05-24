@@ -2,6 +2,7 @@ package top.toybus.luyao.api.entity;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
@@ -13,6 +14,7 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -27,58 +29,71 @@ import lombok.Data;
 @Table(name = "tb_user")
 @SuppressWarnings("serial")
 public class User implements Serializable {
-	@JsonIgnore
-	@Transient
-	@SuppressWarnings({ "unchecked", "rawtypes" })
-	private Set<String> ignoreProps = new HashSet() {
-		{
-			add("token"); // 默认忽略token字段序列化
-		}
-	};
+    @JsonIgnore
+    @Transient
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    private Set<String> ignoreProps = new HashSet() {
+        {
+            add("token"); // 默认忽略token字段序列化
+        }
+    };
 
-	@JsonIgnore
-	@Id
-	@GeneratedValue
-	private Long id;
+    @JsonIgnore
+    @Id
+    @GeneratedValue
+    private Long id;
 
-	private String mobile;
+    private String mobile;
 
-	@JsonIgnore
-	@Column(updatable = false)
-	private String password;
+    @JsonInclude(Include.NON_NULL)
+    private String token;
 
-	@JsonInclude(Include.NON_NULL)
-	private String token;
+    @JsonIgnore
+    @Column(updatable = false)
+    private String password;
 
-	private String nickname;
+    @Column(name = "head_img")
+    private String headImg;
 
-	private BigDecimal balance;
+    private String nickname;
 
-	private Boolean owner;
+    private String sign;
 
-	@Column(name = "vehicle_no")
-	private String vehicleNo;
+    private Integer sex;
 
-	@Column(name = "ride_template_id")
-	private Long rideTemplateId;
+    private String occupation;
 
-	private Integer status;
+    @JsonFormat(pattern = "yyyy-MM-dd")
+    private LocalDate birthday;
 
-	@JsonIgnore
-	@Column(name = "create_time")
-	private LocalDateTime createTime;
+    private BigDecimal balance;
 
-	@JsonIgnore
-	@Column(name = "update_time")
-	private LocalDateTime updateTime;
+    @Column(name = "ride_count")
+    private Integer rideCount;
 
-	// 默认忽略token属性的序列化，但是登录成功后需要
-	public String getToken() {
-		return ignoreProps.contains("token") ? null : token;
-	}
+    private Integer status;
 
-	public String getBalance() {
-		return balance == null ? null : balance.toString();
-	}
+    private Boolean owner;
+
+    @JsonInclude(Include.NON_NULL)
+    @Transient
+    private Vehicle vehicle;
+
+    @JsonIgnore
+    @Column(name = "create_time")
+    private LocalDateTime createTime;
+
+    @JsonIgnore
+    @Column(name = "update_time")
+    private LocalDateTime updateTime;
+
+    // 默认忽略token属性的序列化，但是登录成功后需要
+    public String getToken() {
+        return ignoreProps.contains("token") ? null : token;
+    }
+
+    public String getBalance() {
+        return balance == null ? null : balance.toString();
+    }
 
 }

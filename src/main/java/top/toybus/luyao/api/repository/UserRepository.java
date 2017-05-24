@@ -9,34 +9,19 @@ import top.toybus.luyao.api.entity.User;
 import top.toybus.luyao.common.repository.BaseRepository;
 
 public interface UserRepository extends BaseRepository<User, Long> {
-	/**
-	 * 根据手机号获得用户信息
-	 * 
-	 * @param mobile
-	 * @return User
-	 */
-	User findUserByMobile(String mobile);
 
-	/**
-	 * 根据令牌获得登录用户
-	 * 
-	 * @param token
-	 * @return User
-	 */
-	User findUserByToken(String token);
+    boolean existsUserByMobile(String mobile);
 
-	/**
-	 * 修改密码
-	 */
-	@Modifying
-	@Query("update User u set u.password = ?2, u.updateTime = ?3 where u.id = ?1")
-	int updateUserPwdById(Long id, String password, LocalDateTime updateTime);
+    User findUserByMobile(String mobile);
 
-	/**
-	 * 修改密码
-	 */
-	@Modifying
-	@Query("update User u set u.password = ?2, u.updateTime = ?3 where u.mobile = ?1")
-	int updateUserPwdByMobile(String mobile, String password, LocalDateTime updateTime);
+    User findUserByToken(String token);
+
+    @Modifying
+    @Query("update User u set u.password = ?2, u.updateTime = ?3, u.status = 0 where u.id = ?1")
+    int updateUserPwdById(Long id, String password, LocalDateTime updateTime);
+
+    @Modifying
+    @Query("update User u set u.owner = ?2 where u.id = ?1")
+    int updateUserOwnerById(Long id, Boolean owner);
 
 }

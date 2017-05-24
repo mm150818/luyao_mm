@@ -19,7 +19,7 @@ public class RideController {
 	private RideService rideService;
 
 	/**
-	 * 发布车次
+	 * 发布行程
 	 */
 	@LoginRequired
 	@RequestMapping("/publish")
@@ -29,7 +29,7 @@ public class RideController {
 	}
 
 	/**
-	 * 删除车次
+	 * 删除行程
 	 */
 	@LoginRequired
 	@RequestMapping("/delete")
@@ -39,7 +39,7 @@ public class RideController {
 	}
 
 	/**
-	 * 修改车次
+	 * 修改行程
 	 */
 	@LoginRequired
 	@RequestMapping("/update")
@@ -49,7 +49,7 @@ public class RideController {
 	}
 
 	/**
-	 * 车次列表
+	 * 行程列表
 	 */
 	@RequestMapping("/list")
 	public ResData list(RideForm rideForm) {
@@ -58,7 +58,7 @@ public class RideController {
 	}
 
 	/**
-	 * 车次详情
+	 * 行程详情
 	 */
 	@RequestMapping("/detail")
 	public ResData detail(RideForm rideForm) {
@@ -67,7 +67,7 @@ public class RideController {
 	}
 
 	/**
-	 * 新增车次模板
+	 * 新增行程模板
 	 */
 	@LoginRequired
 	@RequestMapping("/addTemplate")
@@ -77,7 +77,7 @@ public class RideController {
 	}
 
 	/**
-	 * 删除车次模板
+	 * 删除行程模板
 	 */
 	@LoginRequired
 	@RequestMapping("/deleteTemplate")
@@ -87,7 +87,7 @@ public class RideController {
 	}
 
 	/**
-	 * 修改车次模板
+	 * 修改行程模板
 	 */
 	@LoginRequired
 	@RequestMapping("/updateTemplate")
@@ -97,7 +97,7 @@ public class RideController {
 	}
 
 	/**
-	 * 车次模板列表
+	 * 行程模板列表
 	 */
 	@LoginRequired
 	@RequestMapping("/listTemplate")

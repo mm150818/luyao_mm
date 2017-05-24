@@ -1,6 +1,8 @@
 package top.toybus.luyao.common;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 
 import javax.transaction.Transactional;
 
@@ -24,24 +26,26 @@ import top.toybus.luyao.api.repository.UserRepository;
 @ActiveProfiles("dev")
 public class CommonTests {
 
-	@Autowired
-	private UserRepository userRepository;
+    @Autowired
+    private UserRepository userRepository;
 
-	@Test
-	public void test1() {
-		Pageable pageable = new PageRequest(0, 1);
-		Page<User> page = userRepository.findAll(pageable);
-		System.out.println(page.getContent());
-	}
+    @Test
+    public void test1() {
+        Pageable pageable = new PageRequest(0, 1);
+        Page<User> page = userRepository.findAll(pageable);
+        System.out.println(page.getContent());
+    }
 
-	@Test
-	public void test2() throws Exception {
-		User user = userRepository.findOne(1L);
-		System.out.println(Jackson2ObjectMapperBuilder.json().build().writeValueAsString(user));
-	}
+    @Test
+    public void test2() throws Exception {
+        User user = userRepository.findOne(1L);
+        System.out.println(Jackson2ObjectMapperBuilder.json().build().writeValueAsString(user));
+    }
 
-	public static void main(String[] args) {
-		System.out.println(LocalDateTime.now());
-	}
+    public static void main(String[] args) {
+        System.out.println(LocalDateTime.now());
+        LocalDateTime now = LocalDateTime.now();
+        System.out.println(Duration.between(now, now.plusSeconds(61)).get(ChronoUnit.MINUTES));
+    }
 
 }

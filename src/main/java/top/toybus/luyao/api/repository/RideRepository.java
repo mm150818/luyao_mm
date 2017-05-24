@@ -11,23 +11,23 @@ import top.toybus.luyao.common.repository.BaseRepository;
 public interface RideRepository extends BaseRepository<Ride, Long> {
 
 	/**
-	 * 查询车次列表和级联乘客列表
+	 * 查询行程列表和级联乘客列表
 	 */
 	Page<Ride> findAllByTemplateFalse(Pageable pageable);
 
 	/**
-	 * 查询指定车主的车次模板
+	 * 查询指定车主的行程模板
 	 */
 	Page<Ride> findAllByTemplateTrueAndOwner(User owner, Pageable pageable);
 
 	/**
-	 * 查询今天发布的车次数
+	 * 查询今天发布的行程数
 	 */
 	@Query("select count(1) from Ride r where r.owner = ?1 and template = 0 and TO_DAYS(r.createTime) = TO_DAYS(NOW())")
 	long countByPubToday(User owner);
 
 	/**
-	 * 查询指定ID的车次模板是否存在
+	 * 查询指定ID的行程模板是否存在
 	 */
 	boolean existsByTemplateTrueAndId(Long id);
 

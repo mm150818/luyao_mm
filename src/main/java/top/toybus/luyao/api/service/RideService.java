@@ -40,7 +40,7 @@ public class RideService {
 	 * 发布车信息
 	 */
 	public ResData publishRide(RideForm rideForm) {
-		ResData resData = ResData.get();
+		ResData resData = ResData.newOne();
 		User loginUser = rideForm.getLoginUser();
 		if (!loginUser.getOwner()) {
 			return resData.setCode(1).setMsg("您不是车主"); // err1
@@ -79,17 +79,17 @@ public class RideService {
 
 				resData.put("ride", ride);
 			} catch (Exception e) {
-				resData.setCode(1).setMsg("车次信息发布失败");
+				resData.setCode(1).setMsg("行程信息发布失败");
 			}
 		}
 		return resData;
 	}
 
 	/**
-	 * 校验车次信息
+	 * 校验行程信息
 	 */
 	private ResData checkRideForm(RideForm rideForm) {
-		ResData resData = ResData.get();
+		ResData resData = ResData.newOne();
 		// 名字，时间，建议赏金，空座位，起点，途径一，途径二，终点
 		if (StringUtils.isBlank(rideForm.getName())) {
 			resData.setCode(ResData.C_PARAM_ERROR).setMsg("请输入名字");
@@ -164,7 +164,7 @@ public class RideService {
 	public ResData getRideDetail(RideForm rideForm) {
 		ResData resData = new ResData();
 		if (rideForm.getId() == null || rideForm.getId() <= 0) {
-			resData.setCode(ResData.C_PARAM_ERROR).setMsg("请输入车次ID");
+			resData.setCode(ResData.C_PARAM_ERROR).setMsg("请输入行程ID");
 		} else {
 			Ride ride = rideRepository.findOne(rideForm.getId());
 			resData.put("ride", ride);
@@ -173,10 +173,10 @@ public class RideService {
 	}
 
 	/**
-	 * 新增车次模板
+	 * 新增行程模板
 	 */
 	public ResData addRideTemplate(RideForm rideForm) {
-		ResData resData = ResData.get();
+		ResData resData = ResData.newOne();
 		User loginUser = rideForm.getLoginUser();
 		if (!loginUser.getOwner()) {
 			return resData.setCode(1).setMsg("您不是车主"); // err1
@@ -202,17 +202,17 @@ public class RideService {
 				ride.setRideViaList(rideViaList);
 				resData.put("rideTemplate", ride);
 			} catch (Exception e) {
-				resData.setCode(1).setMsg("车次模板新增失败");
+				resData.setCode(1).setMsg("行程模板新增失败");
 			}
 		}
 		return resData;
 	}
 
 	/**
-	 * 车次模板列表
+	 * 行程模板列表
 	 */
 	public ResData listRideTemplate(RideForm rideForm) {
-		ResData resData = ResData.get();
+		ResData resData = ResData.newOne();
 		if (!rideForm.getLoginUser().getOwner()) {
 			return resData.setCode(1).setMsg("您不是车主"); // err1
 		}
@@ -224,22 +224,22 @@ public class RideService {
 	}
 
 	/**
-	 * 删除车次
+	 * 删除行程
 	 */
 	public ResData deleteRide(RideForm rideForm) {
-		ResData resData = ResData.get();
+		ResData resData = ResData.newOne();
 		User loginUser = rideForm.getLoginUser();
 		if (!loginUser.getOwner()) {
 			return resData.setCode(1).setMsg("您不是车主"); // err1
 		}
 		if (rideForm.getId() == null || rideForm.getId() <= 0) {
-			resData.setCode(ResData.C_PARAM_ERROR).setMsg("请输入车次ID");
+			resData.setCode(ResData.C_PARAM_ERROR).setMsg("请输入行程ID");
 		} else {
 			Ride ride = rideRepository.findOneByIdAndOwner(rideForm.getId(), loginUser);
 			if (ride == null || ride.getTemplate()) {
-				resData.setCode(2).setMsg("该车次不存在"); // err2
+				resData.setCode(2).setMsg("该行程不存在"); // err2
 			} else if (ride.getRideUserList().size() > 0) {
-				resData.setCode(3).setMsg("该车次不能删除"); // err3
+				resData.setCode(3).setMsg("该行程不能删除"); // err3
 			} else {
 				try {
 					rideRepository.delete(ride);
@@ -248,7 +248,7 @@ public class RideService {
 					paramMap.put("name", String.format("[%s]", ride.getName()));
 					smsHelper.sendSms(ride.getOwner().getMobile(), smsHelper.smsProperties.getTplRideDelOk(), paramMap);
 				} catch (Exception e) {
-					resData.setCode(4).setMsg("车次删除失败"); // err4
+					resData.setCode(4).setMsg("行程删除失败"); // err4
 				}
 			}
 		}
@@ -256,25 +256,25 @@ public class RideService {
 	}
 
 	/**
-	 * 删除车次模板
+	 * 删除行程模板
 	 */
 	public ResData deleteTemplate(RideForm rideForm) {
-		ResData resData = ResData.get();
+		ResData resData = ResData.newOne();
 		User loginUser = rideForm.getLoginUser();
 		if (!loginUser.getOwner()) {
 			return resData.setCode(1).setMsg("您不是车主"); // err1
 		}
 		if (rideForm.getId() == null || rideForm.getId() <= 0) {
-			resData.setCode(ResData.C_PARAM_ERROR).setMsg("请输入车次模板ID");
+			resData.setCode(ResData.C_PARAM_ERROR).setMsg("请输入行程模板ID");
 		} else {
 			Ride ride = rideRepository.findOneByIdAndOwner(rideForm.getId(), loginUser);
 			if (ride == null || !ride.getTemplate()) {
-				resData.setCode(2).setMsg("该车次模板不存在"); // err2
+				resData.setCode(2).setMsg("该行程模板不存在"); // err2
 			} else {
 				try {
 					rideRepository.delete(ride);
 				} catch (Exception e) {
-					resData.setCode(4).setMsg("车次模板删除失败"); // err4
+					resData.setCode(4).setMsg("行程模板删除失败"); // err4
 				}
 			}
 		}
@@ -282,22 +282,22 @@ public class RideService {
 	}
 
 	/**
-	 * 车次信息修改
+	 * 行程信息修改
 	 */
 	public ResData updateRide(RideForm rideForm) {
-		ResData resData = ResData.get();
+		ResData resData = ResData.newOne();
 		User loginUser = rideForm.getLoginUser();
 		if (!loginUser.getOwner()) {
 			return resData.setCode(1).setMsg("您不是车主"); // err1
 		}
 		if (rideForm.getId() == null || rideForm.getId() <= 0) {
-			resData.setCode(ResData.C_PARAM_ERROR).setMsg("请输入车次ID");
+			resData.setCode(ResData.C_PARAM_ERROR).setMsg("请输入行程ID");
 		} else {
 			Ride ride = rideRepository.findOneByIdAndOwner(rideForm.getId(), loginUser);
 			if (ride == null || ride.getTemplate()) {
-				resData.setCode(2).setMsg("该车次不存在"); // err2
+				resData.setCode(2).setMsg("该行程不存在"); // err2
 			} else if (ride.getRideUserList().size() > 0) {
-				resData.setCode(3).setMsg("该车次不能修改"); // err3
+				resData.setCode(3).setMsg("该行程不能修改"); // err3
 			} else {
 				// 检验表单
 				if (StringUtils.isNotBlank(rideForm.getName())) {
@@ -384,7 +384,7 @@ public class RideService {
 
 					resData.put("ride", ride);
 				} catch (Exception e) {
-					resData.setCode(4).setMsg("车次信息修改失败"); // err4
+					resData.setCode(4).setMsg("行程信息修改失败"); // err4
 				}
 			}
 		}
@@ -392,20 +392,20 @@ public class RideService {
 	}
 
 	/**
-	 * 车次模板信息修改
+	 * 行程模板信息修改
 	 */
 	public ResData updateTemplate(RideForm rideForm) {
-		ResData resData = ResData.get();
+		ResData resData = ResData.newOne();
 		User loginUser = rideForm.getLoginUser();
 		if (!loginUser.getOwner()) {
 			return resData.setCode(1).setMsg("您不是车主"); // err1
 		}
 		if (rideForm.getId() == null || rideForm.getId() <= 0) {
-			resData.setCode(ResData.C_PARAM_ERROR).setMsg("请输入车次模板ID");
+			resData.setCode(ResData.C_PARAM_ERROR).setMsg("请输入行程模板ID");
 		} else {
 			Ride ride = rideRepository.findOneByIdAndOwner(rideForm.getId(), loginUser);
 			if (ride == null || !ride.getTemplate()) {
-				resData.setCode(2).setMsg("该车次模板不存在"); // err2
+				resData.setCode(2).setMsg("该行程模板不存在"); // err2
 			} else {
 				// 检验表单
 				if (StringUtils.isNotBlank(rideForm.getName())) {
@@ -488,7 +488,7 @@ public class RideService {
 
 					resData.put("rideTemplate", ride);
 				} catch (Exception e) {
-					resData.setCode(4).setMsg("车次模板信息修改失败"); // err4
+					resData.setCode(4).setMsg("行程模板信息修改失败"); // err4
 				}
 			}
 		}

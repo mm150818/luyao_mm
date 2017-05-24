@@ -11,75 +11,75 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  * @author sunxg
  */
 public class ResData {
-	/** 参数错误 */
-	public static final int C_PARAM_ERROR = 1001;
-	/** 未登录 */
-	public static final int C_NOT_LOGIN = 1002;
+    /** 参数错误 */
+    public static final int C_PARAM_ERROR = 1001;
+    /** 未登录 */
+    public static final int C_NOT_LOGIN = 1002;
 
-	private int code = 0; // 状态码，0：OK，1-99：错误状态码说明，1000-：通用错误码
-	private String msg = "OK"; // 返回码说明
-	private Map<String, Object> data = new HashMap<>(); // 数据
+    private int code = 0; // 状态码，0：OK，1-99：错误状态码说明，1000-：通用错误码
+    private String msg = "OK"; // 返回码说明
+    private Map<String, Object> data = new HashMap<>(); // 数据
 
-	public ResData() {
-	}
+    public ResData() {
+    }
 
-	public ResData(int code) {
-		this.code = code;
-	}
+    public ResData(int code) {
+        this.code = code;
+    }
 
-	public ResData(int code, String msg) {
-		this.code = code;
-		this.msg = msg;
-	}
+    public ResData(int code, String msg) {
+        this.code = code;
+        this.msg = msg;
+    }
 
-	@JsonIgnore
-	public boolean isOk() {
-		return code == 0;
-	}
+    @JsonIgnore
+    public boolean isOk() {
+        return code == 0;
+    }
 
-	public static ResData get() {
-		return new ResData();
-	}
+    public static ResData newOne() {
+        return new ResData();
+    }
 
-	public int getCode() {
-		return code;
-	}
+    public int getCode() {
+        return code;
+    }
 
-	public ResData setCode(int code) {
-		this.code = code;
-		return this;
-	}
+    public ResData setCode(int code) {
+        this.code = code;
+        return this;
+    }
 
-	public String getMsg() {
-		return msg;
-	}
+    public String getMsg() {
+        return msg;
+    }
 
-	public ResData setMsg(String msg) {
-		this.msg = msg;
-		return this;
-	}
+    public ResData setMsg(String msg) {
+        this.msg = msg;
+        return this;
+    }
 
-	public Map<String, Object> getData() {
-		return data;
-	}
+    public Map<String, Object> getData() {
+        return data;
+    }
 
-	/**
-	 * 向resData.data中存放数据
-	 * 
-	 * @param key
-	 * @param value
-	 * @return value
-	 */
-	public <V extends Object> Object put(String key, V value) {
-		return this.data.put(key, value);
-	}
+    /**
+     * 向resData.data中存放数据
+     * 
+     * @param key
+     * @param value
+     * @return value
+     */
+    public <V extends Object> Object put(String key, V value) {
+        return this.data.put(key, value);
+    }
 
-	/**
-	 * 向resData.data中存放map数据
-	 * 
-	 * @param map
-	 */
-	public void putAll(Map<String, ? extends Object> map) {
-		this.data.putAll(map);
-	}
+    /**
+     * 向resData.data中存放map数据
+     * 
+     * @param map
+     */
+    public void putAll(Map<String, ? extends Object> map) {
+        this.data.putAll(map);
+    }
 }

@@ -10,7 +10,7 @@
 
 	<name>luyao</name>
 	<url>http://maven.apache.org</url>
-	
+
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -20,14 +20,15 @@
 		<aliyun-sdk-mns.version>1.1.8.4</aliyun-sdk-mns.version>
 		<commons-collections4.version>4.1</commons-collections4.version>
 		<commons-lang3.version>3.5</commons-lang3.version>
+		<commons-io.version>2.5</commons-io.version>
 	</properties>
-	
+
 	<parent>
-    <groupId>org.springframework.boot</groupId>
-    <artifactId>spring-boot-starter-parent</artifactId>
-    <version>1.5.3.RELEASE</version>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>1.5.3.RELEASE</version>
 	</parent>
-	
+
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -53,28 +54,28 @@
 		</dependency>
 
 		<dependency>
-	    <groupId>org.projectlombok</groupId>
-	    <artifactId>lombok</artifactId>
-	    <scope>compile</scope>
-	  </dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<scope>compile</scope>
+		</dependency>
 		<dependency>
 			<groupId>org.hibernate</groupId>
 			<artifactId>hibernate-java8</artifactId>
 		</dependency>
 		<dependency>
-		    <groupId>com.fasterxml.jackson.datatype</groupId>
-		    <artifactId>jackson-datatype-jsr310</artifactId>
+			<groupId>com.fasterxml.jackson.datatype</groupId>
+			<artifactId>jackson-datatype-jsr310</artifactId>
 		</dependency>
-		
+
 		<dependency>
-       <groupId>mysql</groupId>
-       <artifactId>mysql-connector-java</artifactId>
-    </dependency>
-		<dependency>    
-      <groupId>com.alibaba</groupId>    
-      <artifactId>druid</artifactId>    
-      <version>${druid.version}</version>  
-    </dependency>
+			<groupId>mysql</groupId>
+			<artifactId>mysql-connector-java</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.alibaba</groupId>
+			<artifactId>druid</artifactId>
+			<version>${druid.version}</version>
+		</dependency>
 		<dependency>
 			<groupId>org.lazyluke</groupId>
 			<artifactId>log4jdbc-remix</artifactId>
@@ -85,8 +86,8 @@
 			<artifactId>aliyun-sdk-mns</artifactId>
 			<version>${aliyun-sdk-mns.version}</version>
 		</dependency>
-		
-	  <!-- apache utils -->
+
+		<!-- apache utils -->
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-collections4</artifactId>
@@ -97,6 +98,17 @@
 			<artifactId>commons-lang3</artifactId>
 			<version>${commons-lang3.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-lang3</artifactId>
+			<version>${commons-lang3.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>commons-io</groupId>
+			<artifactId>commons-io</artifactId>
+			<version>${commons-io.version}</version>
+		</dependency>
+
 	</dependencies>
 
 	<build>
@@ -105,12 +117,12 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 				<dependencies>
-	        <dependency>
+					<dependency>
 						<groupId>org.springframework</groupId>
 						<artifactId>springloaded</artifactId>
 						<version>1.2.7.RELEASE</version>
 					</dependency>
-		    </dependencies>
+				</dependencies>
 				<configuration>
 					<fork>true</fork>
 					<mainClass>top.toybus.luyao.BootApplication</mainClass>
@@ -125,18 +137,18 @@
 			</plugin>
 		</plugins>
 		<pluginManagement>
-      <plugins>
-        <plugin>
-          <artifactId>maven-compiler-plugin</artifactId>
-          <configuration>
-            <source>${java.version}</source>
-            <target>${java.version}</target>
-          </configuration>
-        </plugin>
-      </plugins>
-    </pluginManagement>
+			<plugins>
+				<plugin>
+					<artifactId>maven-compiler-plugin</artifactId>
+					<configuration>
+						<source>${java.version}</source>
+						<target>${java.version}</target>
+					</configuration>
+				</plugin>
+			</plugins>
+		</pluginManagement>
 	</build>
-	
+
 	<repositories>
 		<repository>
 			<id>thirdparty-releases</id>

@@ -16,17 +16,22 @@ import top.toybus.luyao.api.interceptor.LoginInterceptor;
 @Configuration
 public class SpringMvcConfig extends WebMvcConfigurerAdapter {
 
-	@Bean
-	public HandlerInterceptor loginInterceptor() {
-		return new LoginInterceptor();
-	}
+    @Bean
+    public HandlerInterceptor loginInterceptor() {
+        return new LoginInterceptor();
+    }
 
-	@Override
-	public void addInterceptors(InterceptorRegistry registry) {
-		// 【需要登录】拦截器
-		registry.addInterceptor(loginInterceptor());
+    @Override
+    public void addInterceptors(InterceptorRegistry registry) {
+        // API【需要登录】拦截器
+        registry.addInterceptor(loginInterceptor()).addPathPatterns("/api/**");
 
-		super.addInterceptors(registry);
-	}
+        super.addInterceptors(registry);
+    }
+
+//    @Override
+//    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+//        super.addResourceHandlers(registry);
+//    }
 
 }

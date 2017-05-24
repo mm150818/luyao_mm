@@ -16,7 +16,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
 /**
- * 车次途经
+ * 行程途经
  */
 @Data
 @Entity
