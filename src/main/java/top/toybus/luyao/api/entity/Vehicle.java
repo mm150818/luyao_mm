@@ -1,3 +1,4 @@
+
 package top.toybus.luyao.api.entity;
 
 import java.io.Serializable;
@@ -26,6 +27,9 @@ public class Vehicle implements Serializable {
     private Long userId;
 
     private String no;
+
+    @Column(name = "plate_no")
+    private String plateNo;
 
     private String model;
 

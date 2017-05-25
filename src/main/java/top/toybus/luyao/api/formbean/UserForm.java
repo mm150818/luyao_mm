@@ -43,6 +43,8 @@ public class UserForm extends BaseForm {
 
     private String no;
 
+    private String plateNo;
+
     private String model;
 
     private String travelImg;

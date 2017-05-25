@@ -315,18 +315,20 @@ public class UserService {
         ResData resData = ResData.newOne();
         User loginUser = userForm.getLoginUser();
 
+        // 是否是新增
+        boolean isNew = loginUser.getOwner() == null;
         Vehicle vehicle = null;
-        if (loginUser.getOwner() == null) { // 不是车主，准备新增车辆信息
+        if (isNew) { // 不是车主，准备新增车辆信息
             vehicle = new Vehicle();
         } else { // 获取已经保存的车辆信息，准备修改
             vehicle = vehicleRepository.findOne(loginUser.getId());
         }
-        if (userForm.getNo() != null) {
-            if (ValidatorUtils.isNotVehicleNo(userForm.getNo())) {
-                return resData.setCode(ResData.C_PARAM_ERROR).setMsg("车编号格式不正确");
+        if (userForm.getPlateNo() != null) {
+            if (StringUtils.length(userForm.getPlateNo()) > 10) {
+                return resData.setCode(ResData.C_PARAM_ERROR).setMsg("车牌号格式不正确");
             }
-            vehicle.setNo(userForm.getNo());
-        } else if (loginUser.getOwner() == null) {
+            vehicle.setPlateNo(userForm.getPlateNo());
+        } else if (isNew) {
             return resData.setCode(ResData.C_PARAM_ERROR).setMsg("请输入车编号");
         }
         if (userForm.getModel() != null) {
@@ -334,7 +336,7 @@ public class UserService {
                 return resData.setCode(ResData.C_PARAM_ERROR).setMsg("车型格式不正确");
             }
             vehicle.setModel(userForm.getModel());
-        } else if (loginUser.getOwner() == null) {
+        } else if (isNew) {
             return resData.setCode(ResData.C_PARAM_ERROR).setMsg("请输入车型");
         }
         if (userForm.getTravelImg() != null) {
@@ -342,7 +344,7 @@ public class UserService {
                 return resData.setCode(ResData.C_PARAM_ERROR).setMsg("行驶证图片格式不正确");
             }
             vehicle.setTravelImg(userForm.getTravelImg());
-        } else if (loginUser.getOwner() == null) {
+        } else if (isNew) {
             return resData.setCode(ResData.C_PARAM_ERROR).setMsg("请输入行驶证图片");
         }
         if (userForm.getDrivingImg() != null) {
@@ -350,7 +352,7 @@ public class UserService {
                 return resData.setCode(ResData.C_PARAM_ERROR).setMsg("驾驶证图片格式不正确");
             }
             vehicle.setDrivingImg(userForm.getDrivingImg());
-        } else if (loginUser.getOwner() == null) {
+        } else if (isNew) {
             return resData.setCode(ResData.C_PARAM_ERROR).setMsg("请输入驾驶证图片");
         }
         if (userForm.getImg() != null) {
@@ -358,20 +360,22 @@ public class UserService {
                 return resData.setCode(ResData.C_PARAM_ERROR).setMsg("车辆图片格式不正确");
             }
             vehicle.setImg(userForm.getImg());
-        } else if (loginUser.getOwner() == null) {
+        } else if (isNew) {
             return resData.setCode(ResData.C_PARAM_ERROR).setMsg("请输入车辆图片");
         }
         if (userForm.getRideTemplateId() != null) {
             if (rideRepository.existsByTemplateTrueAndId(userForm.getRideTemplateId())) {
                 vehicle.setRideTemplateId(userForm.getRideTemplateId());
             } else {
-                return resData.setCode(3).setMsg("行程模板不存在"); // err3
+                return resData.setCode(1).setMsg("行程模板不存在"); // err1
             }
         }
 
-        if (loginUser.getOwner() == null) {
+        if (isNew) {
             vehicle.setUserId(loginUser.getId());
             vehicle.setCreateTime(LocalDateTime.now());
+            String no = this.getVehicleNo();
+            vehicle.setNo(no);
         }
         vehicle.setUpdateTime(LocalDateTime.now());
         // 修改车辆信息，重新审核
@@ -380,6 +384,23 @@ public class UserService {
 
         resData.put("vehicle", vehicle);
         return resData;
+    }
+
+    /**
+     * 生成车编号，行程号保留1000内的数字。也就是说从1001开始所有带4的数字不要。E1001(etc的) 普通的就K1002
+     */
+    private String getVehicleNo() {
+        Vehicle vehicle = vehicleRepository.findFirstByOrderByCreateTimeDesc();
+        String prevNo = null;
+        if (vehicle == null) {
+            prevNo = "E1000";
+        } else {
+            prevNo = vehicle.getNo();
+        }
+        prevNo = prevNo.substring(1);
+        String nextNo = Integer.toString(Integer.valueOf(prevNo) + 1); // 数字+1
+        nextNo = nextNo.replaceFirst("4", "5"); // 存在4，则替换为5
+        return "E" + nextNo;
     }
 
     /**
