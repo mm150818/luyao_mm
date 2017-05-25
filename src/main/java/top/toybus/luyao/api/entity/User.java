@@ -20,6 +20,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 import lombok.Data;
+import top.toybus.luyao.common.properties.FileProperties;
 
 /**
  * 用户(乘客、车主)
@@ -94,6 +95,10 @@ public class User implements Serializable {
 
     public String getBalance() {
         return balance == null ? null : balance.toString();
+    }
+
+    public String getHeadImg() {
+        return FileProperties.BASE_URL + this.headImg;
     }
 
 }

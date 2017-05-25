@@ -11,6 +11,7 @@ import javax.persistence.Table;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import lombok.Data;
+import top.toybus.luyao.common.properties.FileProperties;
 
 /**
  * 车信息
@@ -46,5 +47,17 @@ public class Vehicle implements Serializable {
     @JsonIgnore
     @Column(name = "update_time")
     private LocalDateTime updateTime;
+
+    public String getTravelImg() {
+        return FileProperties.BASE_URL + this.travelImg;
+    }
+
+    public String getDrivingImg() {
+        return FileProperties.BASE_URL + this.travelImg;
+    }
+
+    public String getImg() {
+        return FileProperties.BASE_URL + this.img;
+    }
 
 }
