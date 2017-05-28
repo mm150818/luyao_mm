@@ -38,20 +38,19 @@ public class Ride implements Serializable {
     @JsonIgnore
     private Boolean template;
 
-    @JsonIgnoreProperties({ "owner", "balance", "rideTemplateId", "status" })
+    @JsonIgnoreProperties({ "owner", "balance", "status" })
     @ManyToOne
     @JoinColumn(name = "owner_id")
     private User owner;
 
-    private String name;
-
-    @Column(name = "img_url")
-    private String imgUrl;
-
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime time;
 
-    private String address;
+    @Column(name = "start_point")
+    private String startPoint;
+
+    @Column(name = "end_point")
+    private String endPoint;
 
     private BigDecimal reward;
 
@@ -81,5 +80,10 @@ public class Ride implements Serializable {
 
     public List<RideUser> getRideUserList() {
         return template ? null : rideUserList;
+    }
+
+    @JsonIgnore
+    public String getStartEndPoint() {
+        return this.startPoint + "—" + this.endPoint;
     }
 }

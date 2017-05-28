@@ -101,4 +101,9 @@ public class User implements Serializable {
         return FileProperties.BASE_URL + this.headImg;
     }
 
+    @JsonIgnore
+    public boolean isNotOwner() {
+        return this.owner == null || !this.owner;
+    }
+
 }

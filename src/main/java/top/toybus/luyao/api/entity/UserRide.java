@@ -16,32 +16,36 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
 /**
- * 用户-顺风车关联表
+ * 用户-行程关联表
  */
 @Data
 @Entity
 @Table(name = "tb_user_ride")
 @SuppressWarnings("serial")
 public class UserRide implements Serializable {
-	@Id
-	@GeneratedValue
-	private Long id;
+    @Id
+    @GeneratedValue
+    private Long id;
 
-	@Column(name = "user_id")
-	private Long userId;
+    @Column(name = "user_id")
+    private Long userId;
 
 //	@JsonIgnoreProperties({ "owner" })
-	@ManyToOne
-	@JoinColumn(name = "ride_id")
-	private Ride ride;
+    @ManyToOne
+    @JoinColumn(name = "ride_id")
+    private Ride ride;
 
-	private Integer seats;
+    private Integer seats;
 
-	@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-	@Column(name = "create_time")
-	private LocalDateTime createTime;
+    @ManyToOne
+    @JoinColumn(name = "ride_via_id")
+    private RideVia rideVia;
 
-	@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-	@Column(name = "update_time")
-	private LocalDateTime updateTime;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @Column(name = "create_time")
+    private LocalDateTime createTime;
+
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @Column(name = "update_time")
+    private LocalDateTime updateTime;
 }

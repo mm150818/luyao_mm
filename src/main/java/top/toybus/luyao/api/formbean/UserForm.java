@@ -24,7 +24,9 @@ public class UserForm extends BaseForm {
 
     private Long rideId;
 
-    private int seats;
+    private Integer seats;
+
+    private Long rideViaId;
 
     private String nickname;
 

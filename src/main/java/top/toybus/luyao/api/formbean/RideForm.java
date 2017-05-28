@@ -16,28 +16,24 @@ import top.toybus.luyao.api.entity.RideVia;
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
 public class RideForm extends BaseForm {
-	private Long id;
+    private Long id;
 
-	private Boolean template;
+    private Boolean template;
 
-	private String name;
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime time;
 
-	private String imgUrl;
+    private String startPoint;
 
-	@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-	private LocalDateTime time;
+    private String endPoint;
 
-	private String address;
+    private BigDecimal reward;
 
-	private BigDecimal reward;
+    private Integer seats;
 
-	private Integer seats;
+    private List<RideVia> rideViaList = new ArrayList<>();
 
-	private Integer remainSeats;
+    private int page = 0;
 
-	private List<RideVia> rideViaList = new ArrayList<>();
-
-	private int page = 0;
-
-	private int size = 10;
+    private int size = 10;
 }

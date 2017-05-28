@@ -13,12 +13,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import top.toybus.luyao.api.entity.Ride;
+import top.toybus.luyao.api.entity.RideVia;
 import top.toybus.luyao.api.entity.Sms;
 import top.toybus.luyao.api.entity.User;
 import top.toybus.luyao.api.entity.UserRide;
 import top.toybus.luyao.api.entity.Vehicle;
 import top.toybus.luyao.api.formbean.UserForm;
 import top.toybus.luyao.api.repository.RideRepository;
+import top.toybus.luyao.api.repository.RideViaRepository;
 import top.toybus.luyao.api.repository.SmsRepository;
 import top.toybus.luyao.api.repository.UserRepository;
 import top.toybus.luyao.api.repository.UserRideRepository;
@@ -37,6 +39,8 @@ public class UserService {
     private SmsRepository smsRepository;
     @Autowired
     private RideRepository rideRepository;
+    @Autowired
+    private RideViaRepository rideViaRepository;
     @Autowired
     private UserRideRepository userRideRepository;
     @Autowired
@@ -404,52 +408,63 @@ public class UserService {
     }
 
     /**
-     * 预约行程，修改预约行程
+     * 预定行程，修改预定行程
      */
     public ResData orderRide(UserForm userForm) {
         ResData resData = ResData.newOne();
         if (userForm.getRideId() == null) {
-            return resData.setCode(1).setMsg("请输入行程ID"); // err1
+            return resData.setCode(ResData.C_PARAM_ERROR).setMsg("请输入行程ID");
+        }
+        if (userForm.getSeats() == null || userForm.getSeats() < 1) {
+            return resData.setCode(ResData.C_PARAM_ERROR).setMsg("请输入座位数");
+        }
+        if (userForm.getRideViaId() == null) {
+            return resData.setCode(ResData.C_PARAM_ERROR).setMsg("请输入途径地点ID");
         }
         Ride ride = rideRepository.findOne(userForm.getRideId());
         if (ride == null) {
-            return resData.setCode(2).setMsg("所选行程不存在"); // err2
+            return resData.setCode(1).setMsg("预定的行程不存在"); // err1
+        }
+        RideVia rideVia = rideViaRepository.findOne(userForm.getRideViaId());
+        if (rideVia == null) {
+            return resData.setCode(2).setMsg("途经地点不存在"); // err2
         }
 
         User loginUser = userForm.getLoginUser();
         UserRide userRide = userRideRepository.findByUserIdAndRide(loginUser.getId(), ride);
         if (userRide == null) {
             if (ride.getRemainSeats() < userForm.getSeats()) {
-                return resData.setCode(3).setMsg(String.format("所选行程目前只有%d个剩余座位", ride.getRemainSeats())); // err3
+                return resData.setCode(3).setMsg(String.format("所选行程目前还剩余%d个座位", ride.getRemainSeats())); // err3
             }
             userRide = new UserRide();
             userRide.setUserId(loginUser.getId());
             userRide.setRide(ride);
             userRide.setSeats(userForm.getSeats());
+            userRide.setRideVia(rideVia);
             userRide.setCreateTime(LocalDateTime.now());
             userRide.setUpdateTime(LocalDateTime.now());
 
             userRide = userRideRepository.save(userRide); // 保存订单
             ride.setRemainSeats(ride.getSeats() - userRide.getSeats()); // 修改剩余座位数
             ride.setUpdateTime(LocalDateTime.now());
-
         } else { // 已经订购过则是修改订单
             if (ride.getRemainSeats() + userRide.getSeats() < userForm.getSeats()) {
                 return resData.setCode(4)
-                        .setMsg(String.format("所选行程目前只有%d个剩余座位", ride.getRemainSeats() + userRide.getSeats())); // err4
+                        .setMsg(String.format("所选行程目前还剩余%d个座位", ride.getRemainSeats() + userRide.getSeats())); // err4
             }
             int remainSeats = ride.getRemainSeats() + userRide.getSeats() - userForm.getSeats();
 
             userRide.setSeats(userForm.getSeats());
+            userRide.setRideVia(rideVia); // 修改途经地点
             ride.setRemainSeats(remainSeats); // 修改剩余座位数
             ride.setUpdateTime(LocalDateTime.now());
         }
 
         // 5月12日19点30分中潭路4号口不见不散（当用户预约并支付成功时收到的提醒）
         Map<String, String> paramMap = new HashMap<>();
-        paramMap.put("name", String.format("[%s]", ride.getName()));
-        paramMap.put("time", ride.getTime().format(DateTimeFormatter.ofPattern("M月d日HH点mm分")));
-        paramMap.put("address", ride.getAddress());
+        paramMap.put("name", String.format("[%s]", ride.getStartEndPoint()));
+        paramMap.put("time", rideVia.getTime().format(DateTimeFormatter.ofPattern("M月d日HH点mm分")));
+        paramMap.put("address", rideVia.getPoint());
         smsHelper.sendSms(loginUser.getMobile(), smsHelper.getSmsProperties().getTplOrderOk(), paramMap);
 
         resData.put("userRide", userRide);
