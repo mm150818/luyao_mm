@@ -35,6 +35,9 @@ public class SmsService {
             resData.setCode(ResData.C_PARAM_ERROR).setMsg("手机号格式不正确");
         } else {
             String verifyCode = RandomStringUtils.randomNumeric(4); // 短信验证码
+            if (smsHelper.isNotProdEnv()) {
+                verifyCode = "0000";
+            }
             boolean isOk = smsHelper.sendSmsVerifyCode(smsForm.getMobile(), verifyCode); // 发送短信验证码
             if (isOk) {
                 Sms newSms = new Sms();
