@@ -24,6 +24,7 @@ import top.toybus.luyao.common.properties.FileProperties;
 public class Vehicle implements Serializable {
     @JsonIgnore
     @Id
+    @Column(name = "user_id")
     private Long userId;
 
     private String no;

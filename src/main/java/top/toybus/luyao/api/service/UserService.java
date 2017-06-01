@@ -2,9 +2,6 @@ package top.toybus.luyao.api.service;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -126,7 +123,7 @@ public class UserService {
      * err1-3
      */
     private ResData checkSmsVerifyCode(Sms sms, UserForm userForm) {
-        ResData resData = ResData.newOne();
+        ResData resData = ResData.get();
         if (sms == null) {
             resData.setCode(1); // err1
             resData.setMsg("请发送短信验证码");
@@ -177,7 +174,7 @@ public class UserService {
      * 修改密码
      */
     public ResData updateUserPwd(UserForm userForm) {
-        ResData resData = ResData.newOne();
+        ResData resData = ResData.get();
         if (StringUtils.isBlank(userForm.getOldPassword())) {
             resData.setCode(ResData.C_PARAM_ERROR).setMsg("请输入原密码");
         } else if (ValidatorUtils.isNotPassword(userForm.getOldPassword())) {
@@ -245,7 +242,7 @@ public class UserService {
      */
     @Transactional(readOnly = true)
     public ResData getUser(UserForm userForm) {
-        ResData resData = ResData.newOne();
+        ResData resData = ResData.get();
         User user = userForm.getLoginUser();
         if (user.getOwner() != null) { // 如果是车主
             Vehicle vehicle = vehicleRepository.findOne(user.getId());
@@ -268,7 +265,7 @@ public class UserService {
      * 修改用户信息
      */
     public ResData updateInfo(UserForm userForm) {
-        ResData resData = ResData.newOne();
+        ResData resData = ResData.get();
         User loginUser = userForm.getLoginUser();
 
         if (userForm.getHeadImg() != null) {
@@ -316,7 +313,7 @@ public class UserService {
      * 修改车主信息
      */
     public ResData updateOwnerInfo(UserForm userForm) {
-        ResData resData = ResData.newOne();
+        ResData resData = ResData.get();
         User loginUser = userForm.getLoginUser();
 
         // 是否是新增
@@ -411,7 +408,7 @@ public class UserService {
      * 预定行程，修改预定行程
      */
     public ResData orderRide(UserForm userForm) {
-        ResData resData = ResData.newOne();
+        ResData resData = ResData.get();
         if (userForm.getRideId() == null) {
             return resData.setCode(ResData.C_PARAM_ERROR).setMsg("请输入行程ID");
         }
@@ -441,13 +438,15 @@ public class UserService {
             userRide.setRide(ride);
             userRide.setSeats(userForm.getSeats());
             userRide.setRideVia(rideVia);
+            userRide.setStatus(0);
+            userRide.setOrderNo(UUIDUtils.getOrderNo()); // 唯一订单号24位
             userRide.setCreateTime(LocalDateTime.now());
             userRide.setUpdateTime(LocalDateTime.now());
 
             userRide = userRideRepository.save(userRide); // 保存订单
             ride.setRemainSeats(ride.getSeats() - userRide.getSeats()); // 修改剩余座位数
             ride.setUpdateTime(LocalDateTime.now());
-        } else { // 已经订购过则是修改订单
+        } else if (userRide.getStatus() == 0) { // 已经订购过则是修改订单
             if (ride.getRemainSeats() + userRide.getSeats() < userForm.getSeats()) {
                 return resData.setCode(4)
                         .setMsg(String.format("所选行程目前还剩余%d个座位", ride.getRemainSeats() + userRide.getSeats())); // err4
@@ -456,16 +455,13 @@ public class UserService {
 
             userRide.setSeats(userForm.getSeats());
             userRide.setRideVia(rideVia); // 修改途经地点
+            userRide.setUpdateTime(LocalDateTime.now());
+
             ride.setRemainSeats(remainSeats); // 修改剩余座位数
             ride.setUpdateTime(LocalDateTime.now());
+        } else {
+            return resData.setCode(5).setMsg("预定的行程不能修改"); // err5
         }
-
-        // 5月12日19点30分中潭路4号口不见不散（当用户预约并支付成功时收到的提醒）
-        Map<String, String> paramMap = new HashMap<>();
-        paramMap.put("name", String.format("[%s]", ride.getStartEndPoint()));
-        paramMap.put("time", rideVia.getTime().format(DateTimeFormatter.ofPattern("M月d日HH点mm分")));
-        paramMap.put("address", rideVia.getPoint());
-        smsHelper.sendSms(loginUser.getMobile(), smsHelper.getSmsProperties().getTplOrderOk(), paramMap);
 
         resData.put("userRide", userRide);
         return resData;

@@ -41,6 +41,11 @@ public class UserRide implements Serializable {
     @JoinColumn(name = "ride_via_id")
     private RideVia rideVia;
 
+    @Column(name = "order_no")
+    private Long orderNo;
+
+    private Integer status;
+
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @Column(name = "create_time")
     private LocalDateTime createTime;

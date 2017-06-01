@@ -34,7 +34,7 @@ public class FileController {
     @LoginRequired
     @RequestMapping("/upimg")
     public ResData upimg(@RequestPart("file") MultipartFile multipartFile) {
-        ResData resData = ResData.newOne();
+        ResData resData = ResData.get();
         try {
             if (multipartFile.isEmpty()) {
                 return resData.setCode(ResData.C_PARAM_ERROR).setMsg("图片不能为空");
@@ -68,7 +68,7 @@ public class FileController {
     @LoginRequired
     @RequestMapping("/delimg")
     public ResData delimg(String url) {
-        ResData resData = ResData.newOne();
+        ResData resData = ResData.get();
         try {
             if (StringUtils.isBlank(url)) {
                 return resData.setCode(ResData.C_PARAM_ERROR).setMsg("图片路径不能为空");

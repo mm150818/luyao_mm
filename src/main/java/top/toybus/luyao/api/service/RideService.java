@@ -47,7 +47,7 @@ public class RideService {
      * 发布车信息
      */
     public ResData publishRide(RideForm rideForm) {
-        ResData resData = ResData.newOne();
+        ResData resData = ResData.get();
         User loginUser = rideForm.getLoginUser();
         if (loginUser.isNotOwner()) {
             return resData.setCode(1).setMsg("您不是车主"); // err1
@@ -98,7 +98,7 @@ public class RideService {
      * 校验行程信息
      */
     private ResData checkRideForm(RideForm rideForm) {
-        ResData resData = ResData.newOne();
+        ResData resData = ResData.get();
         if (rideForm.getTime() == null) {
             resData.setCode(ResData.C_PARAM_ERROR).setMsg("请输入时间");
         } else if (StringUtils.isBlank(rideForm.getStartPoint())) {
@@ -222,7 +222,7 @@ public class RideService {
      * 新增行程模板
      */
     public ResData addRideTemplate(RideForm rideForm) {
-        ResData resData = ResData.newOne();
+        ResData resData = ResData.get();
         User loginUser = rideForm.getLoginUser();
         if (loginUser.isNotOwner()) {
             return resData.setCode(1).setMsg("您不是车主"); // err1
@@ -259,7 +259,7 @@ public class RideService {
      * 行程模板列表
      */
     public ResData listRideTemplate(RideForm rideForm) {
-        ResData resData = ResData.newOne();
+        ResData resData = ResData.get();
         if (rideForm.getLoginUser().isNotOwner()) {
             return resData.setCode(1).setMsg("您不是车主"); // err1
         }
@@ -274,7 +274,7 @@ public class RideService {
      * 删除行程
      */
     public ResData deleteRide(RideForm rideForm) {
-        ResData resData = ResData.newOne();
+        ResData resData = ResData.get();
         User loginUser = rideForm.getLoginUser();
         if (loginUser.isNotOwner()) {
             return resData.setCode(1).setMsg("您不是车主"); // err1
@@ -306,7 +306,7 @@ public class RideService {
      * 删除行程模板
      */
     public ResData deleteTemplate(RideForm rideForm) {
-        ResData resData = ResData.newOne();
+        ResData resData = ResData.get();
         User loginUser = rideForm.getLoginUser();
         if (loginUser.isNotOwner()) {
             return resData.setCode(1).setMsg("您不是车主"); // err1
@@ -332,7 +332,7 @@ public class RideService {
      * 行程信息修改
      */
     public ResData updateRide(RideForm rideForm) {
-        ResData resData = ResData.newOne();
+        ResData resData = ResData.get();
         User loginUser = rideForm.getLoginUser();
         if (loginUser.isNotOwner()) {
             return resData.setCode(1).setMsg("您不是车主"); // err1
@@ -430,7 +430,7 @@ public class RideService {
      * 行程模板信息修改
      */
     public ResData updateTemplate(RideForm rideForm) {
-        ResData resData = ResData.newOne();
+        ResData resData = ResData.get();
         User loginUser = rideForm.getLoginUser();
         if (loginUser.isNotOwner()) {
             return resData.setCode(1).setMsg("您不是车主"); // err1

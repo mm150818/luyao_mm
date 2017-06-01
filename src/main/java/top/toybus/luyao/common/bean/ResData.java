@@ -37,7 +37,7 @@ public class ResData {
         return code == 0;
     }
 
-    public static ResData newOne() {
+    public static ResData get() {
         return new ResData();
     }
 
@@ -68,10 +68,11 @@ public class ResData {
      * 
      * @param key
      * @param value
-     * @return value
+     * @return ResData
      */
-    public <V extends Object> Object put(String key, V value) {
-        return this.data.put(key, value);
+    public ResData put(String key, Object value) {
+        this.data.put(key, value);
+        return this;
     }
 
     /**
@@ -79,7 +80,8 @@ public class ResData {
      * 
      * @param map
      */
-    public void putAll(Map<String, ? extends Object> map) {
-        this.data.putAll(map);
+    public ResData putAll(Map<String, ? extends Object> dataMap) {
+        this.data.putAll(dataMap);
+        return this;
     }
 }
