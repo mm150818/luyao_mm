@@ -12,7 +12,6 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
-import com.fasterxml.jackson.annotation.JsonFilter;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -28,7 +27,6 @@ import top.toybus.luyao.common.properties.FileProperties;
 @Entity
 @Table(name = "tb_user")
 @SuppressWarnings("serial")
-@JsonFilter("userFilter")
 public class User implements Serializable {
     @JsonIgnore
     @Id
