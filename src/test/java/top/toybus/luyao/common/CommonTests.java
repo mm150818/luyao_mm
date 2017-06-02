@@ -1,8 +1,6 @@
 package top.toybus.luyao.common;
 
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
+import java.math.BigDecimal;
 
 import javax.transaction.Transactional;
 
@@ -17,7 +15,13 @@ import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.databind.ObjectWriter;
+import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
+import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
+
 import top.toybus.luyao.api.entity.User;
+import top.toybus.luyao.api.entity.Vehicle;
 import top.toybus.luyao.api.repository.UserRepository;
 
 @RunWith(SpringRunner.class)
@@ -42,10 +46,30 @@ public class CommonTests {
         System.out.println(Jackson2ObjectMapperBuilder.json().build().writeValueAsString(user));
     }
 
-    public static void main(String[] args) {
-        System.out.println(LocalDateTime.now());
-        LocalDateTime now = LocalDateTime.now();
-        System.out.println(Duration.between(now, now.plusSeconds(61)).get(ChronoUnit.MINUTES));
+    public static void main(String[] args) throws Exception {
+//        System.out.println(LocalDateTime.now());
+//        LocalDateTime now = LocalDateTime.now();
+//        System.out.println(Duration.between(now, now.plusSeconds(61)).get(ChronoUnit.MINUTES));
+
+        User user = new User();
+        user.setToken("token");
+        user.setBalance(new BigDecimal("1.21342424"));
+        user.setMobile("13661561730");
+        Vehicle vehicle = new Vehicle();
+        vehicle.setModel("model");
+        vehicle.setNo("no");
+        user.setVehicle(vehicle);
+
+        SimpleFilterProvider filterProvider = new SimpleFilterProvider();
+        filterProvider.setDefaultFilter(SimpleBeanPropertyFilter.serializeAllExcept("balance"));
+//        filterProvider.addFilter("userFilter", SimpleBeanPropertyFilter.filterOutAllExcept("mobile", "headImg", "img"));
+        filterProvider
+                .setDefaultFilter(SimpleBeanPropertyFilter.SerializeExceptFilter.serializeAllExcept("vehicle.img"));
+        ObjectWriter objectWriter = Jackson2ObjectMapperBuilder.json().build()
+                .setSerializationInclusion(Include.NON_NULL).setFilterProvider(filterProvider)
+                .writerWithDefaultPrettyPrinter();
+        System.out.println(objectWriter.writeValueAsString(user));
+
     }
 
 }

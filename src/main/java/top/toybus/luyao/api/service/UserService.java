@@ -163,7 +163,7 @@ public class UserService {
                     user.setVehicle(vehicle);
                 }
 
-                user.getIgnoreProps().remove("token"); // 序列化token
+                user.setPassword(null); // password为null是，序列化包含token
                 resData.put("user", user);
             }
         }
