@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import top.toybus.luyao.api.annotation.LoginRequired;
+import top.toybus.luyao.api.formbean.RideForm;
 import top.toybus.luyao.api.formbean.UserForm;
 import top.toybus.luyao.api.service.UserService;
 import top.toybus.luyao.common.bean.ResData;
@@ -86,12 +87,12 @@ public class UserController {
     }
 
     /**
-     * 用户订购行程
+     * 用户订单列表
      */
     @LoginRequired
-    @RequestMapping("/orderRide")
-    public ResData orderRide(UserForm userForm) {
-        ResData resData = userService.orderRide(userForm);
+    @RequestMapping("/orderList")
+    public ResData orderList(RideForm rideForm) {
+        ResData resData = userService.orderList(rideForm);
         return resData;
     }
 

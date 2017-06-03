@@ -2,28 +2,39 @@ package top.toybus.luyao.api.service;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
+
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Expression;
+import javax.persistence.criteria.JoinType;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import top.toybus.luyao.api.entity.Ride;
-import top.toybus.luyao.api.entity.RideVia;
 import top.toybus.luyao.api.entity.Sms;
 import top.toybus.luyao.api.entity.User;
 import top.toybus.luyao.api.entity.UserRide;
 import top.toybus.luyao.api.entity.Vehicle;
+import top.toybus.luyao.api.formbean.RideForm;
 import top.toybus.luyao.api.formbean.UserForm;
 import top.toybus.luyao.api.repository.RideRepository;
-import top.toybus.luyao.api.repository.RideViaRepository;
 import top.toybus.luyao.api.repository.SmsRepository;
 import top.toybus.luyao.api.repository.UserRepository;
 import top.toybus.luyao.api.repository.UserRideRepository;
 import top.toybus.luyao.api.repository.VehicleRepository;
 import top.toybus.luyao.common.bean.ResData;
 import top.toybus.luyao.common.helper.SmsHelper;
+import top.toybus.luyao.common.util.PageUtils;
 import top.toybus.luyao.common.util.UUIDUtils;
 import top.toybus.luyao.common.util.ValidatorUtils;
 
@@ -36,8 +47,6 @@ public class UserService {
     private SmsRepository smsRepository;
     @Autowired
     private RideRepository rideRepository;
-    @Autowired
-    private RideViaRepository rideViaRepository;
     @Autowired
     private UserRideRepository userRideRepository;
     @Autowired
@@ -405,66 +414,54 @@ public class UserService {
     }
 
     /**
-     * 预定行程，修改预定行程
+     * 用户订单列表
      */
-    public ResData orderRide(UserForm userForm) {
+    public ResData orderList(RideForm rideForm) {
         ResData resData = ResData.get();
-        if (userForm.getRideId() == null) {
-            return resData.setCode(ResData.C_PARAM_ERROR).setMsg("请输入行程ID");
-        }
-        if (userForm.getSeats() == null || userForm.getSeats() < 1) {
-            return resData.setCode(ResData.C_PARAM_ERROR).setMsg("请输入座位数");
-        }
-        if (userForm.getRideViaId() == null) {
-            return resData.setCode(ResData.C_PARAM_ERROR).setMsg("请输入途径地点ID");
-        }
-        Ride ride = rideRepository.findOne(userForm.getRideId());
-        if (ride == null) {
-            return resData.setCode(1).setMsg("预定的行程不存在"); // err1
-        }
-        RideVia rideVia = rideViaRepository.findOne(userForm.getRideViaId());
-        if (rideVia == null) {
-            return resData.setCode(2).setMsg("途经地点不存在"); // err2
-        }
-
-        User loginUser = userForm.getLoginUser();
-        UserRide userRide = userRideRepository.findByUserIdAndRide(loginUser.getId(), ride);
-        if (userRide == null) {
-            if (ride.getRemainSeats() < userForm.getSeats()) {
-                return resData.setCode(3).setMsg(String.format("所选行程目前还剩余%d个座位", ride.getRemainSeats())); // err3
-            }
-            userRide = new UserRide();
-            userRide.setUserId(loginUser.getId());
-            userRide.setRide(ride);
-            userRide.setSeats(userForm.getSeats());
-            userRide.setRideVia(rideVia);
-            userRide.setStatus(0);
-            userRide.setOrderNo(UUIDUtils.getOrderNo()); // 唯一订单号24位
-            userRide.setCreateTime(LocalDateTime.now());
-            userRide.setUpdateTime(LocalDateTime.now());
-
-            userRide = userRideRepository.save(userRide); // 保存订单
-            ride.setRemainSeats(ride.getSeats() - userRide.getSeats()); // 修改剩余座位数
-            ride.setUpdateTime(LocalDateTime.now());
-        } else if (userRide.getStatus() == 0) { // 已经订购过则是修改订单
-            if (ride.getRemainSeats() + userRide.getSeats() < userForm.getSeats()) {
-                return resData.setCode(4)
-                        .setMsg(String.format("所选行程目前还剩余%d个座位", ride.getRemainSeats() + userRide.getSeats())); // err4
-            }
-            int remainSeats = ride.getRemainSeats() + userRide.getSeats() - userForm.getSeats();
-
-            userRide.setSeats(userForm.getSeats());
-            userRide.setRideVia(rideVia); // 修改途经地点
-            userRide.setUpdateTime(LocalDateTime.now());
-
-            ride.setRemainSeats(remainSeats); // 修改剩余座位数
-            ride.setUpdateTime(LocalDateTime.now());
-        } else {
-            return resData.setCode(5).setMsg("预定的行程不能修改"); // err5
-        }
-
-        resData.put("userRide", userRide);
+        Pageable pageable = PageUtils.toPageRequest(rideForm);
+//        Page<UserRide> pageUserRide = userRideRepository.findListByUserIdOrderByIdDesc(loginUser.getId(), pageable);
+        Page<UserRide> pageUserRide = userRideRepository.findAll(toSpecification(rideForm), pageable);
+        pageUserRide.getContent().forEach(userRide -> userRide.getRide().setRideUserList(null));
+        resData.putAll(PageUtils.toMap("userRideList", pageUserRide));
         return resData;
+    }
+
+    /**
+     * 构建行程列表查询条件
+     */
+    private Specification<UserRide> toSpecification(final RideForm rideForm) {
+        return new Specification<UserRide>() {
+            @Override
+            public Predicate toPredicate(Root<UserRide> root, CriteriaQuery<?> query, CriteriaBuilder cb) {
+                Predicate predicate = cb.conjunction();
+                List<Expression<Boolean>> expressions = predicate.getExpressions();
+                expressions.add(cb.equal(root.get("userId").as(Long.class), rideForm.getLoginUser().getId()));
+                root.fetch(root.getModel().getSingularAttribute("ride", Ride.class), JoinType.LEFT);
+                // 行程开始时间
+                if (rideForm.getStartTime() != null) {
+                    expressions.add(cb.greaterThanOrEqualTo(root.get("ride").get("time").as(LocalDateTime.class),
+                            rideForm.getStartTime()));
+                }
+                // 行程结束时间
+                if (rideForm.getEndTime() != null) {
+                    expressions.add(cb.lessThanOrEqualTo(root.get("ride").get("time").as(LocalDateTime.class),
+                            rideForm.getEndTime()));
+                }
+                // 行程出发地
+                if (StringUtils.isNotBlank(rideForm.getStartPoint())) {
+                    expressions.add(cb.like(root.get("ride").get("startPoint").as(String.class),
+                            "%" + rideForm.getStartPoint() + "%"));
+                }
+                // 行程目的地
+                if (StringUtils.isNotBlank(rideForm.getEndPoint())) {
+                    expressions.add(cb.like(root.get("ride").get("endPoint").as(String.class),
+                            "%" + rideForm.getEndPoint() + "%"));
+                }
+                // id desc
+                query.orderBy(cb.desc(root.get("id").as(Long.class)));
+                return predicate;
+            }
+        };
     }
 
 }

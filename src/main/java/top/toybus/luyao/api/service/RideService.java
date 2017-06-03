@@ -2,7 +2,6 @@ package top.toybus.luyao.api.service;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,7 +16,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,12 +24,15 @@ import org.springframework.transaction.annotation.Transactional;
 import top.toybus.luyao.api.entity.Ride;
 import top.toybus.luyao.api.entity.RideVia;
 import top.toybus.luyao.api.entity.User;
+import top.toybus.luyao.api.entity.UserRide;
 import top.toybus.luyao.api.formbean.RideForm;
 import top.toybus.luyao.api.repository.RideRepository;
 import top.toybus.luyao.api.repository.RideViaRepository;
+import top.toybus.luyao.api.repository.UserRideRepository;
 import top.toybus.luyao.common.bean.ResData;
 import top.toybus.luyao.common.helper.SmsHelper;
 import top.toybus.luyao.common.util.PageUtils;
+import top.toybus.luyao.common.util.UUIDUtils;
 import top.toybus.luyao.common.util.ValidatorUtils;
 
 @Service
@@ -40,6 +42,8 @@ public class RideService {
     private RideRepository rideRepository;
     @Autowired
     private RideViaRepository rideViaRepository;
+    @Autowired
+    private UserRideRepository userRideRepository;
     @Autowired
     private SmsHelper smsHelper;
 
@@ -162,9 +166,9 @@ public class RideService {
         if (StringUtils.length(rideForm.getEndPoint()) > 10) {
             return resData.setCode(ResData.C_PARAM_ERROR).setMsg("目的地格式不正确");
         }
-        PageRequest pageRequest = PageUtils.toPageRequest(rideForm);
+        Pageable pageable = PageUtils.toPageRequest(rideForm);
 //        Page<Ride> pageRide = rideRepository.findAllByTemplateFalse(pageRequest);
-        Page<Ride> pageRide = rideRepository.findAll(toSpecification(rideForm), pageRequest);
+        Page<Ride> pageRide = rideRepository.findAll(toSpecification(rideForm), pageable);
         resData.putAll(PageUtils.toMap("rideList", pageRide));
         return resData;
     }
@@ -263,9 +267,9 @@ public class RideService {
         if (rideForm.getLoginUser().isNotOwner()) {
             return resData.setCode(1).setMsg("您不是车主"); // err1
         }
-        PageRequest pageRequest = PageUtils.toPageRequest(rideForm);
-        Page<Ride> pageRide = rideRepository.findAllByTemplateTrueAndOwner(rideForm.getLoginUser(), pageRequest);
-        pageRide.getContent().forEach(ride -> ride.setRideUserList(Collections.emptyList()));
+        Pageable pageable = PageUtils.toPageRequest(rideForm);
+        Page<Ride> pageRide = rideRepository.findAllByTemplateTrueAndOwner(rideForm.getLoginUser(), pageable);
+        pageRide.getContent().forEach(ride -> ride.setRideUserList(null));
         resData.putAll(PageUtils.toMap("rideTemplateList", pageRide));
         return resData;
     }
@@ -515,6 +519,52 @@ public class RideService {
                 }
             }
         }
+        return resData;
+    }
+
+    /**
+     * 预定行程，修改预定行程
+     */
+    public ResData order(RideForm rideForm) {
+        ResData resData = ResData.get();
+        if (rideForm.getRideId() == null) {
+            return resData.setCode(ResData.C_PARAM_ERROR).setMsg("请输入行程ID");
+        }
+        if (rideForm.getSeats() == null || rideForm.getSeats() < 1) {
+            return resData.setCode(ResData.C_PARAM_ERROR).setMsg("请输入座位数");
+        }
+        if (rideForm.getRideViaId() == null) {
+            return resData.setCode(ResData.C_PARAM_ERROR).setMsg("请输入途径地点ID");
+        }
+        Ride ride = rideRepository.findOne(rideForm.getRideId());
+        if (ride == null) {
+            return resData.setCode(1).setMsg("预定的行程不存在"); // err1
+        }
+        RideVia rideVia = rideViaRepository.findOne(rideForm.getRideViaId());
+        if (rideVia == null) {
+            return resData.setCode(2).setMsg("途经地点不存在"); // err2
+        }
+
+        if (ride.getRemainSeats() < rideForm.getSeats()) {
+            return resData.setCode(3).setMsg(String.format("所选行程目前还剩余%d个座位", ride.getRemainSeats())); // err3
+        }
+        User loginUser = rideForm.getLoginUser();
+
+        UserRide userRide = new UserRide();
+        userRide.setUserId(loginUser.getId());
+        userRide.setRide(ride);
+        userRide.setSeats(rideForm.getSeats());
+        userRide.setRideVia(rideVia);
+        userRide.setStatus(0);
+        userRide.setOrderNo(UUIDUtils.getOrderNo()); // 唯一订单号24位
+        userRide.setCreateTime(LocalDateTime.now());
+        userRide.setUpdateTime(LocalDateTime.now());
+
+        userRide = userRideRepository.save(userRide); // 保存订单
+        ride.setRemainSeats(ride.getRemainSeats() - userRide.getSeats()); // 修改剩余座位数
+        ride.setUpdateTime(LocalDateTime.now());
+
+        resData.put("userRide", userRide);
         return resData;
     }
 

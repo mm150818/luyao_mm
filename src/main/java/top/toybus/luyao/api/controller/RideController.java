@@ -106,4 +106,14 @@ public class RideController {
         return resData;
     }
 
+    /**
+     * 行程预定
+     */
+    @LoginRequired
+    @RequestMapping("/order")
+    public ResData order(RideForm rideForm) {
+        ResData resData = rideService.order(rideForm);
+        return resData;
+    }
+
 }

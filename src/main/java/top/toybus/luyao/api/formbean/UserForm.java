@@ -22,12 +22,6 @@ public class UserForm extends BaseForm {
 
     private String verifyCode;
 
-    private Long rideId;
-
-    private Integer seats;
-
-    private Long rideViaId;
-
     private String nickname;
 
     private String headImg;
@@ -54,5 +48,9 @@ public class UserForm extends BaseForm {
     private String drivingImg;
 
     private String img;
+
+    private int page = 0;
+
+    private int size = 10;
 
 }

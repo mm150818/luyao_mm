@@ -36,4 +36,14 @@ public class RideForm extends BaseForm {
     private int page = 0;
 
     private int size = 10;
+
+    private Long rideId;
+
+    private Long rideViaId;
+
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime startTime;
+
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime endTime;
 }
