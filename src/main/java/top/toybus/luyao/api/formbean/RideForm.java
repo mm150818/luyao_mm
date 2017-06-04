@@ -1,6 +1,5 @@
 package top.toybus.luyao.api.formbean;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,7 +26,7 @@ public class RideForm extends BaseForm {
 
     private String endPoint;
 
-    private BigDecimal reward;
+    private Long reward;
 
     private Integer seats;
 
@@ -46,4 +45,6 @@ public class RideForm extends BaseForm {
 
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime endTime;
+
+    private Long orderNo;
 }

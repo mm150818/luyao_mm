@@ -1,6 +1,7 @@
 package top.toybus.luyao.api.formbean;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import org.springframework.format.annotation.DateTimeFormat;
 
@@ -53,4 +54,13 @@ public class UserForm extends BaseForm {
 
     private int size = 10;
 
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime startTime;
+
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime endTime;
+
+    private Long money;
+
+    private Integer way;
 }

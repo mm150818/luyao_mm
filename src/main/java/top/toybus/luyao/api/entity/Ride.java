@@ -1,7 +1,6 @@
 package top.toybus.luyao.api.entity;
 
 import java.io.Serializable;
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -52,7 +51,7 @@ public class Ride implements Serializable {
     @Column(name = "end_point")
     private String endPoint;
 
-    private BigDecimal reward;
+    private Long reward;
 
     private Integer seats;
 

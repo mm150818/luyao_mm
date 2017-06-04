@@ -1,6 +1,5 @@
 package top.toybus.luyao.api.service;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -20,6 +19,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import top.toybus.luyao.api.entity.Balance;
 import top.toybus.luyao.api.entity.Ride;
 import top.toybus.luyao.api.entity.Sms;
 import top.toybus.luyao.api.entity.User;
@@ -27,6 +27,7 @@ import top.toybus.luyao.api.entity.UserRide;
 import top.toybus.luyao.api.entity.Vehicle;
 import top.toybus.luyao.api.formbean.RideForm;
 import top.toybus.luyao.api.formbean.UserForm;
+import top.toybus.luyao.api.repository.BalanceRepository;
 import top.toybus.luyao.api.repository.RideRepository;
 import top.toybus.luyao.api.repository.SmsRepository;
 import top.toybus.luyao.api.repository.UserRepository;
@@ -51,6 +52,8 @@ public class UserService {
     private UserRideRepository userRideRepository;
     @Autowired
     private VehicleRepository vehicleRepository;
+    @Autowired
+    private BalanceRepository balanceRepository;
     @Autowired
     private SmsHelper smsHelper;
 
@@ -80,7 +83,7 @@ public class UserService {
                     newUser.setMobile(userForm.getMobile());
                     newUser.setToken("");
                     newUser.setPassword(DigestUtils.md5Hex(userForm.getPassword()));
-                    newUser.setBalance(new BigDecimal("0.00"));
+                    newUser.setBalance(0L);
                     newUser.setRideCount(0);
                     newUser.setStatus(0);
                     newUser.setCreateTime(LocalDateTime.now());
@@ -458,10 +461,86 @@ public class UserService {
                             "%" + rideForm.getEndPoint() + "%"));
                 }
                 // id desc
-                query.orderBy(cb.desc(root.get("id").as(Long.class)));
+                query.orderBy(cb.desc(root.get("id")));
                 return predicate;
             }
         };
+    }
+
+    /**
+     * 账户明细
+     */
+    public ResData balanceList(UserForm userForm) {
+        ResData resData = ResData.get();
+        Pageable pageable = PageUtils.toPageRequest(userForm);
+        Page<Balance> pageBalance = balanceRepository.findAll((new Specification<Balance>() {
+            @Override
+            public Predicate toPredicate(Root<Balance> root, CriteriaQuery<?> query, CriteriaBuilder cb) {
+                Predicate predicate = cb.conjunction();
+                List<Expression<Boolean>> expressions = predicate.getExpressions();
+                expressions.add(cb.equal(root.get("userId").as(Long.class), userForm.getLoginUser().getId()));
+                // 开始时间
+                if (userForm.getStartTime() != null) {
+                    expressions.add(cb.greaterThanOrEqualTo(root.get("createTime").as(LocalDateTime.class),
+                            userForm.getStartTime()));
+                }
+                // 结束时间
+                if (userForm.getEndTime() != null) {
+                    expressions.add(cb.lessThanOrEqualTo(root.get("createTime").as(LocalDateTime.class),
+                            userForm.getEndTime()));
+                }
+                query.orderBy(cb.desc(root.get("id")));
+                return predicate;
+            }
+        }), pageable);
+        resData.putAll(PageUtils.toMap("balanceList", pageBalance));
+        return resData;
+    }
+
+    /**
+     * 充值
+     */
+    public ResData charge(UserForm userForm) {
+        ResData resData = ResData.get();
+        if (userForm.getMoney() == null || userForm.getMoney() <= 0) {
+            return resData.setCode(ResData.C_PARAM_ERROR).setMsg("请输入充值金额");
+        }
+        Balance balance = new Balance();
+        balance.setCreateTime(LocalDateTime.now());
+        balance.setMoney(userForm.getMoney());
+        balance.setOrderNo(UUIDUtils.getOrderNo());
+        balance.setStatus(1);
+        balance.setType(1);
+        balance.setUserId(userForm.getLoginUser().getId());
+
+        balance = balanceRepository.save(balance);
+
+        resData.put("balance", balance);
+
+        return resData;
+    }
+
+    /**
+     * 提现
+     */
+    public ResData drawCash(UserForm userForm) {
+        ResData resData = ResData.get();
+        if (userForm.getMoney() == null || userForm.getMoney() <= 0) {
+            return resData.setCode(ResData.C_PARAM_ERROR).setMsg("请输入提现金额");
+        }
+        Balance balance = new Balance();
+        balance.setCreateTime(LocalDateTime.now());
+        balance.setMoney(userForm.getMoney());
+        balance.setOrderNo(UUIDUtils.getOrderNo());
+        balance.setStatus(1);
+        balance.setType(2);
+        balance.setUserId(userForm.getLoginUser().getId());
+
+        balance = balanceRepository.save(balance);
+
+        resData.put("balance", balance);
+
+        return resData;
     }
 
 }

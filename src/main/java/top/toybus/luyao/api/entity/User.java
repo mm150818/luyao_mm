@@ -1,7 +1,6 @@
 package top.toybus.luyao.api.entity;
 
 import java.io.Serializable;
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -56,7 +55,12 @@ public class User implements Serializable {
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate birthday;
 
-    private BigDecimal balance;
+    private Long balance;
+
+    private Long income;
+
+    @Column(name = "draw_cash")
+    private Long drawCash;
 
     @Column(name = "ride_count")
     private Integer rideCount;
@@ -83,10 +87,6 @@ public class User implements Serializable {
      */
     public String getToken() {
         return password == null ? token : null;
-    }
-
-    public String getBalance() {
-        return balance == null ? null : balance.toString();
     }
 
     public String getHeadImg() {

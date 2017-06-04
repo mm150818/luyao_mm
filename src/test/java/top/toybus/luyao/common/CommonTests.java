@@ -1,7 +1,5 @@
 package top.toybus.luyao.common;
 
-import java.math.BigDecimal;
-
 import javax.transaction.Transactional;
 
 import org.junit.Test;
@@ -53,7 +51,7 @@ public class CommonTests {
 
         User user = new User();
         user.setToken("token");
-        user.setBalance(new BigDecimal("1.21342424"));
+        user.setBalance(100L);
         user.setMobile("13661561730");
         Vehicle vehicle = new Vehicle();
         vehicle.setModel("model");

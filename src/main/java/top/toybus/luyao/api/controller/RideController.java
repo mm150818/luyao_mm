@@ -116,4 +116,14 @@ public class RideController {
         return resData;
     }
 
+    /**
+     * 行程结束
+     */
+    @LoginRequired
+    @RequestMapping("/finish")
+    public ResData finish(RideForm rideForm) {
+        ResData resData = rideService.finish(rideForm);
+        return resData;
+    }
+
 }

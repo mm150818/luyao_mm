@@ -1,6 +1,5 @@
 package top.toybus.luyao.api.service;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
@@ -81,8 +80,9 @@ public class TradeService {
             String appId = request.getParameter("app_id");
 
             Payment pay = paymentRepository.findByOutTradeNo(outTradeNo);
+//            Integer type = pay.getType(); // 1用户订单，2账户明细
             if (this.verifyAliData(pay, outTradeNo, totalAmount, sellerId, appId)) {
-                Long userRideId = pay.getUserRideId();
+                Long userRideId = pay.getTargetId();
                 UserRide userRide = userRideRepository.findOne(userRideId);
 
                 if ("TRADE_SUCCESS".equals(tradeStatus) || "TRADE_FINISHED".equals(tradeStatus)) {
@@ -136,9 +136,8 @@ public class TradeService {
             String outTradeNo = outTradeNoObj.toString();
             Object resultCodeObj = paramsMap.get("result_code");
             Payment pay = paymentRepository.findByOutTradeNo(outTradeNo);
-            if (pay.getTotalAmount().multiply(new BigDecimal("100")).toBigInteger().toString()
-                    .equals(paramsMap.get("total_fee"))) {
-                Long userRideId = pay.getUserRideId();
+            if (pay.getTotalAmount().toString().equals(paramsMap.get("total_fee"))) {
+                Long userRideId = pay.getTargetId();
                 UserRide userRide = userRideRepository.findOne(userRideId);
 
                 if ("SUCCESS".equals(resultCodeObj)) {
@@ -189,21 +188,22 @@ public class TradeService {
         if (userRide == null) {
             return resData.setCode(1).setMsg("该订单不存在"); // err1
         }
-        BigDecimal totalAmount = userRide.getRide().getReward();
+        Long totalAmount = userRide.getRide().getReward();
         Integer way = tradeForm.getWay();
         String body = "马洲路遥-预定行程";
         if (way == 1) {
-            String result = tradeHelper.aliAppPay(orderNo.toString(), body, totalAmount.toString());
+            String result = tradeHelper.aliAppPay(orderNo.toString(), body, Long.valueOf(totalAmount / 100).toString());
             resData.put("result", result);
         } else if (way == 2) {
             Map<String, Object> resultMap = tradeHelper.wxUnifiedorder(orderNo.toString(), body,
-                    totalAmount.multiply(new BigDecimal("100")).toBigInteger().toString());
+                    totalAmount.toString());
             resData.putAll(resultMap);
         }
 
         // 保存对账单
         Payment pay = new Payment();
-        pay.setUserRideId(userRide.getId());
+        pay.setType(1);
+        pay.setTargetId(userRide.getId());
         pay.setOutTradeNo(orderNo);
         pay.setTotalAmount(totalAmount);
         pay.setWay(tradeForm.getWay()); // 1支付宝支付,2微信支付

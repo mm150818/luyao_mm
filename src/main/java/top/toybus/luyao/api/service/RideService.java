@@ -21,14 +21,18 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import top.toybus.luyao.api.entity.Balance;
 import top.toybus.luyao.api.entity.Ride;
 import top.toybus.luyao.api.entity.RideVia;
 import top.toybus.luyao.api.entity.User;
 import top.toybus.luyao.api.entity.UserRide;
+import top.toybus.luyao.api.entity.Vehicle;
 import top.toybus.luyao.api.formbean.RideForm;
+import top.toybus.luyao.api.repository.BalanceRepository;
 import top.toybus.luyao.api.repository.RideRepository;
 import top.toybus.luyao.api.repository.RideViaRepository;
 import top.toybus.luyao.api.repository.UserRideRepository;
+import top.toybus.luyao.api.repository.VehicleRepository;
 import top.toybus.luyao.common.bean.ResData;
 import top.toybus.luyao.common.helper.SmsHelper;
 import top.toybus.luyao.common.util.PageUtils;
@@ -44,6 +48,10 @@ public class RideService {
     private RideViaRepository rideViaRepository;
     @Autowired
     private UserRideRepository userRideRepository;
+    @Autowired
+    private VehicleRepository vehicleRepository;
+    @Autowired
+    private BalanceRepository balanceRepository;
     @Autowired
     private SmsHelper smsHelper;
 
@@ -217,6 +225,9 @@ public class RideService {
             resData.setCode(ResData.C_PARAM_ERROR).setMsg("请输入行程ID");
         } else {
             Ride ride = rideRepository.findOne(rideForm.getId());
+            User owner = ride.getOwner();
+            Vehicle vehicle = vehicleRepository.findOne(owner.getId());
+            owner.setVehicle(vehicle);
             resData.put("ride", ride);
         }
         return resData;
@@ -523,7 +534,7 @@ public class RideService {
     }
 
     /**
-     * 预定行程，修改预定行程
+     * 预定行程
      */
     public ResData order(RideForm rideForm) {
         ResData resData = ResData.get();
@@ -556,7 +567,7 @@ public class RideService {
         userRide.setSeats(rideForm.getSeats());
         userRide.setRideVia(rideVia);
         userRide.setStatus(0);
-        userRide.setOrderNo(UUIDUtils.getOrderNo()); // 唯一订单号24位
+        userRide.setOrderNo(UUIDUtils.getOrderNo()); // 唯一订单号
         userRide.setCreateTime(LocalDateTime.now());
         userRide.setUpdateTime(LocalDateTime.now());
 
@@ -565,6 +576,37 @@ public class RideService {
         ride.setUpdateTime(LocalDateTime.now());
 
         resData.put("userRide", userRide);
+        return resData;
+    }
+
+    /**
+     * 行程结束
+     */
+    public ResData finish(RideForm rideForm) {
+        ResData resData = ResData.get();
+        Long orderNo = rideForm.getOrderNo();
+        if (orderNo == null || orderNo <= 0) {
+            return resData.setCode(ResData.C_PARAM_ERROR).setMsg("请输入订单号");
+        }
+        UserRide userRide = userRideRepository.findByOrderNo(orderNo);
+        if (userRide == null) {
+            return resData.setCode(1).setMsg("该订单不存在"); // err1
+        }
+        Ride ride = userRide.getRide();
+        User owner = ride.getOwner();
+        Long money = ride.getReward().longValue() * userRide.getSeats();
+        // 司机收入明细
+        Balance balance = new Balance();
+        balance.setCreateTime(LocalDateTime.now());
+        balance.setMoney(money);
+        balance.setOrderNo(orderNo);
+        balance.setStatus(1);
+        balance.setType(3);
+        balance.setUserId(owner.getId());
+        balance = balanceRepository.save(balance);
+
+        owner.setBalance(owner.getBalance() + money);
+
         return resData;
     }
 

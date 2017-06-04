@@ -96,4 +96,34 @@ public class UserController {
         return resData;
     }
 
+    /**
+     * 用户账户明细列表
+     */
+    @LoginRequired
+    @RequestMapping("/balanceList")
+    public ResData balanceList(UserForm userForm) {
+        ResData resData = userService.balanceList(userForm);
+        return resData;
+    }
+
+    /**
+     * 用户充值
+     */
+    @LoginRequired
+    @RequestMapping("/charge")
+    public ResData charge(UserForm userForm) {
+        ResData resData = userService.charge(userForm);
+        return resData;
+    }
+
+    /**
+     * 用户提现
+     */
+    @LoginRequired
+    @RequestMapping("/drawCash")
+    public ResData drawCash(UserForm userForm) {
+        ResData resData = userService.drawCash(userForm);
+        return resData;
+    }
+
 }

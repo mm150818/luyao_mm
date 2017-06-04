@@ -1,19 +1,18 @@
 package top.toybus.luyao.api.entity;
 
 import java.io.Serializable;
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.PrimaryKeyJoinColumn;
 import javax.persistence.Table;
 
 import lombok.Data;
 
 /**
- * 短信
+ * 支付
  */
 @Data
 @Entity
@@ -21,8 +20,13 @@ import lombok.Data;
 @SuppressWarnings("serial")
 public class Payment implements Serializable {
     @Id
-    @PrimaryKeyJoinColumn(name = "user_ride_id")
-    private Long userRideId;
+    @GeneratedValue
+    private Long id;
+
+    private Integer type;
+
+    @Column(name = "target_id")
+    private Long targetId;
 
     private Integer way;
 
@@ -33,7 +37,7 @@ public class Payment implements Serializable {
     private String tradeNo;
 
     @Column(name = "total_amount")
-    private BigDecimal totalAmount;
+    private Long totalAmount;
 
     @Column(name = "create_time")
     private LocalDateTime createTime;
