@@ -192,7 +192,8 @@ public class TradeService {
         Integer way = tradeForm.getWay();
         String body = "马洲路遥-预定行程";
         if (way == 1) {
-            String result = tradeHelper.aliAppPay(orderNo.toString(), body, Long.valueOf(totalAmount / 100).toString());
+            String result = tradeHelper.aliAppPay(orderNo.toString(), body,
+                    Double.valueOf(totalAmount / 100).toString());
             resData.put("result", result);
         } else if (way == 2) {
             Map<String, Object> resultMap = tradeHelper.wxUnifiedorder(orderNo.toString(), body,

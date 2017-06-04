@@ -26,25 +26,25 @@ import lombok.Data;
 @Table(name = "tb_user_ride")
 @SuppressWarnings("serial")
 public class RideUser implements Serializable {
-	@Id
-	@GeneratedValue
-	private Long id;
+    @Id
+    @GeneratedValue
+    private Long id;
 
-	@Column(name = "ride_id")
-	private Long rideId;
+    @Column(name = "ride_id")
+    private Long rideId;
 
-	@JsonIgnoreProperties({ "owner", "balance", "vehicleNo", "rideTemplateId", "status" })
-	@ManyToOne
-	@JoinColumn(name = "user_id")
-	private User user;
+    @JsonIgnoreProperties({ "vehicle", "balance", "vehicleNo", "rideTemplateId", "status" })
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
 
-	private Integer seats;
+    private Integer seats;
 
-	@JsonIgnore
-	@Column(name = "create_time")
-	private LocalDateTime createTime;
+    @JsonIgnore
+    @Column(name = "create_time")
+    private LocalDateTime createTime;
 
-	@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-	@Column(name = "update_time")
-	private Date updateTime;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @Column(name = "update_time")
+    private Date updateTime;
 }

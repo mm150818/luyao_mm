@@ -177,6 +177,10 @@ public class RideService {
         Pageable pageable = PageUtils.toPageRequest(rideForm);
 //        Page<Ride> pageRide = rideRepository.findAllByTemplateFalse(pageRequest);
         Page<Ride> pageRide = rideRepository.findAll(toSpecification(rideForm), pageable);
+        pageRide.forEach(ride -> {
+            User owner = ride.getOwner();
+            owner.setVehicle(vehicleRepository.findOne(owner.getId()));
+        });
         resData.putAll(PageUtils.toMap("rideList", pageRide));
         return resData;
     }
