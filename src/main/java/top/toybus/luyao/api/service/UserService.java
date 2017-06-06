@@ -2,6 +2,7 @@ package top.toybus.luyao.api.service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -20,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import top.toybus.luyao.api.entity.Balance;
+import top.toybus.luyao.api.entity.Payment;
 import top.toybus.luyao.api.entity.Ride;
 import top.toybus.luyao.api.entity.Sms;
 import top.toybus.luyao.api.entity.User;
@@ -28,6 +30,7 @@ import top.toybus.luyao.api.entity.Vehicle;
 import top.toybus.luyao.api.formbean.RideForm;
 import top.toybus.luyao.api.formbean.UserForm;
 import top.toybus.luyao.api.repository.BalanceRepository;
+import top.toybus.luyao.api.repository.PaymentRepository;
 import top.toybus.luyao.api.repository.RideRepository;
 import top.toybus.luyao.api.repository.SmsRepository;
 import top.toybus.luyao.api.repository.UserRepository;
@@ -35,6 +38,7 @@ import top.toybus.luyao.api.repository.UserRideRepository;
 import top.toybus.luyao.api.repository.VehicleRepository;
 import top.toybus.luyao.common.bean.ResData;
 import top.toybus.luyao.common.helper.SmsHelper;
+import top.toybus.luyao.common.helper.TradeHelper;
 import top.toybus.luyao.common.util.PageUtils;
 import top.toybus.luyao.common.util.UUIDUtils;
 import top.toybus.luyao.common.util.ValidatorUtils;
@@ -55,7 +59,11 @@ public class UserService {
     @Autowired
     private BalanceRepository balanceRepository;
     @Autowired
+    private PaymentRepository paymentRepository;
+    @Autowired
     private SmsHelper smsHelper;
+    @Autowired
+    private TradeHelper tradeHelper;
 
     /**
      * 注册用户
@@ -257,7 +265,7 @@ public class UserService {
         ResData resData = ResData.get();
         User user = userForm.getLoginUser();
         if (user.getOwner() != null) { // 如果是车主
-            Vehicle vehicle = vehicleRepository.findOne(user.getId());
+            Vehicle vehicle = vehicleRepository.findOne(user.getVehicleId());
             user.setVehicle(vehicle);
         }
         resData.put("user", user);
@@ -334,7 +342,7 @@ public class UserService {
         if (isNew) { // 不是车主，准备新增车辆信息
             vehicle = new Vehicle();
         } else { // 获取已经保存的车辆信息，准备修改
-            vehicle = vehicleRepository.findOne(loginUser.getId());
+            vehicle = vehicleRepository.findOne(loginUser.getVehicleId());
         }
         if (userForm.getPlateNo() != null) {
             if (StringUtils.length(userForm.getPlateNo()) > 10) {
@@ -385,15 +393,14 @@ public class UserService {
         }
 
         if (isNew) {
-            vehicle.setUserId(loginUser.getId());
             vehicle.setCreateTime(LocalDateTime.now());
-            String no = this.getVehicleNo();
+            String no = this.getVehicleNo(); // 生成车牌号
             vehicle.setNo(no);
         }
         vehicle.setUpdateTime(LocalDateTime.now());
-        // 修改车辆信息，重新审核
-        userRepository.updateUserOwnerById(loginUser.getId(), false);
         vehicle = vehicleRepository.save(vehicle);
+        // 修改车辆信息，重新审核
+        userRepository.updateUserOwnerById(loginUser.getId(), false, vehicle.getId());
 
         resData.put("vehicle", vehicle);
         return resData;
@@ -505,18 +512,30 @@ public class UserService {
         if (userForm.getMoney() == null || userForm.getMoney() <= 0) {
             return resData.setCode(ResData.C_PARAM_ERROR).setMsg("请输入充值金额");
         }
-        Balance balance = new Balance();
-        balance.setCreateTime(LocalDateTime.now());
-        balance.setMoney(userForm.getMoney());
-        balance.setOrderNo(UUIDUtils.getOrderNo());
-        balance.setStatus(1);
-        balance.setType(1);
-        balance.setUserId(userForm.getLoginUser().getId());
+        if (userForm.getWay() == null) {
+            return resData.setCode(ResData.C_PARAM_ERROR).setMsg("请选择支付方式");
+        } else if (userForm.getWay() != 1 && userForm.getWay() != 2) {
+            return resData.setCode(ResData.C_PARAM_ERROR).setMsg("支付方式格式不正确");
+        }
 
-        balance = balanceRepository.save(balance);
+        Integer way = userForm.getWay();
+        Long money = userForm.getMoney();
+        Long orderNo = UUIDUtils.getOrderNo();
 
-        resData.put("balance", balance);
+        Map<String, Object> orderMap = tradeHelper.unifiedOrder(way, orderNo, "马洲路遥-充值", money);
 
+        Payment payment = new Payment();
+        payment.setCreateTime(LocalDateTime.now());
+        payment.setTotalAmount(userForm.getMoney());
+        payment.setOrderNo(orderNo);
+        payment.setWay(userForm.getWay());
+        payment.setStatus(0);
+        payment.setType(2);
+
+        payment = paymentRepository.save(payment);
+
+        resData.put("payment", payment);
+        resData.putAll(orderMap);
         return resData;
     }
 
@@ -526,19 +545,31 @@ public class UserService {
     public ResData drawCash(UserForm userForm) {
         ResData resData = ResData.get();
         if (userForm.getMoney() == null || userForm.getMoney() <= 0) {
-            return resData.setCode(ResData.C_PARAM_ERROR).setMsg("请输入提现金额");
+            return resData.setCode(ResData.C_PARAM_ERROR).setMsg("请输入充值金额");
         }
-        Balance balance = new Balance();
-        balance.setCreateTime(LocalDateTime.now());
-        balance.setMoney(userForm.getMoney());
-        balance.setOrderNo(UUIDUtils.getOrderNo());
-        balance.setStatus(1);
-        balance.setType(2);
-        balance.setUserId(userForm.getLoginUser().getId());
+        if (userForm.getWay() == null) {
+            return resData.setCode(ResData.C_PARAM_ERROR).setMsg("请选择支付方式");
+        } else if (userForm.getWay() != 1 && userForm.getWay() != 2) {
+            return resData.setCode(ResData.C_PARAM_ERROR).setMsg("支付方式格式不正确");
+        }
 
-        balance = balanceRepository.save(balance);
+        Integer way = userForm.getWay();
+        Long money = userForm.getMoney();
+        Long orderNo = UUIDUtils.getOrderNo();
 
-        resData.put("balance", balance);
+        Map<String, Object> orderMap = tradeHelper.unifiedOrder(way, orderNo, "马洲路遥-提现", money);
+
+        Payment payment = new Payment();
+        payment.setCreateTime(LocalDateTime.now());
+        payment.setTotalAmount(userForm.getMoney());
+        payment.setOrderNo(orderNo);
+        payment.setWay(userForm.getWay());
+        payment.setType(3);
+
+        payment = paymentRepository.save(payment);
+
+        resData.put("payment", payment);
+        resData.putAll(orderMap);
 
         return resData;
     }

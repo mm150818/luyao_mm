@@ -3,6 +3,8 @@ package top.toybus.luyao.common.bean;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.collections4.MapUtils;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
@@ -81,7 +83,9 @@ public class ResData {
      * @param map
      */
     public ResData putAll(Map<String, ? extends Object> dataMap) {
-        this.data.putAll(dataMap);
+        if (MapUtils.isNotEmpty(dataMap)) {
+            this.data.putAll(dataMap);
+        }
         return this;
     }
 }

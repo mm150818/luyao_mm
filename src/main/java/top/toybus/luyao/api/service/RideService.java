@@ -22,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import top.toybus.luyao.api.entity.Balance;
+import top.toybus.luyao.api.entity.Payment;
 import top.toybus.luyao.api.entity.Ride;
 import top.toybus.luyao.api.entity.RideVia;
 import top.toybus.luyao.api.entity.User;
@@ -29,12 +30,14 @@ import top.toybus.luyao.api.entity.UserRide;
 import top.toybus.luyao.api.entity.Vehicle;
 import top.toybus.luyao.api.formbean.RideForm;
 import top.toybus.luyao.api.repository.BalanceRepository;
+import top.toybus.luyao.api.repository.PaymentRepository;
 import top.toybus.luyao.api.repository.RideRepository;
 import top.toybus.luyao.api.repository.RideViaRepository;
 import top.toybus.luyao.api.repository.UserRideRepository;
 import top.toybus.luyao.api.repository.VehicleRepository;
 import top.toybus.luyao.common.bean.ResData;
 import top.toybus.luyao.common.helper.SmsHelper;
+import top.toybus.luyao.common.helper.TradeHelper;
 import top.toybus.luyao.common.util.PageUtils;
 import top.toybus.luyao.common.util.UUIDUtils;
 import top.toybus.luyao.common.util.ValidatorUtils;
@@ -53,7 +56,11 @@ public class RideService {
     @Autowired
     private BalanceRepository balanceRepository;
     @Autowired
+    private PaymentRepository paymentRepository;
+    @Autowired
     private SmsHelper smsHelper;
+    @Autowired
+    private TradeHelper tradeHelper;
 
     /**
      * 发布车信息
@@ -559,27 +566,55 @@ public class RideService {
         if (rideVia == null) {
             return resData.setCode(2).setMsg("途经地点不存在"); // err2
         }
-
-        if (ride.getRemainSeats() < rideForm.getSeats()) {
-            return resData.setCode(3).setMsg(String.format("所选行程目前还剩余%d个座位", ride.getRemainSeats())); // err3
-        }
         User loginUser = rideForm.getLoginUser();
+        // 最后一个订单
+        UserRide userRide = userRideRepository.findFirstByUserIdAndRideOrderByIdDesc(loginUser.getId(), ride);
+        if (userRide != null && userRide.getPayment().getStatus() == 0) { // 有已创建的订单
+            resData.put("payment", userRide.getPayment());
+//            resData.put("userRide", userRide);
+            return resData.setCode(3).setMsg("您有一个行程订单未支付"); // err3
+        }
+        if (ride.getRemainSeats() < rideForm.getSeats()) {
+            return resData.setCode(4).setMsg(String.format("所选行程目前还剩余%d个座位", ride.getRemainSeats())); // err4
+        }
+        if (rideForm.getWay() == null) {
+            return resData.setCode(ResData.C_PARAM_ERROR).setMsg("请选择支付方式");
+        } else if (rideForm.getWay() != 1 && rideForm.getWay() != 2) {
+            return resData.setCode(ResData.C_PARAM_ERROR).setMsg("支付方式格式不正确");
+        }
 
-        UserRide userRide = new UserRide();
+        userRide = new UserRide();
         userRide.setUserId(loginUser.getId());
         userRide.setRide(ride);
         userRide.setSeats(rideForm.getSeats());
         userRide.setRideVia(rideVia);
-        userRide.setStatus(0);
-        userRide.setOrderNo(UUIDUtils.getOrderNo()); // 唯一订单号
+        userRide.setConfirmed(false);
         userRide.setCreateTime(LocalDateTime.now());
         userRide.setUpdateTime(LocalDateTime.now());
+
+        Integer way = rideForm.getWay();
+        Long orderNo = UUIDUtils.getOrderNo();
+        Long totalAmount = userRide.getTotalAmount();
+        // 账单
+        Payment payment = new Payment();
+        payment.setCreateTime(LocalDateTime.now());
+        payment.setTotalAmount(totalAmount);
+        payment.setOrderNo(orderNo);
+        payment.setWay(way);
+        payment.setStatus(0);
+        payment.setType(1);
+
+        payment = paymentRepository.save(payment);
+        userRide.setPayment(payment);
 
         userRide = userRideRepository.save(userRide); // 保存订单
         ride.setRemainSeats(ride.getRemainSeats() - userRide.getSeats()); // 修改剩余座位数
         ride.setUpdateTime(LocalDateTime.now());
 
-        resData.put("userRide", userRide);
+        Map<String, Object> orderMap = tradeHelper.unifiedOrder(way, orderNo, "马洲路遥-行程支付", totalAmount);
+
+        resData.put("payment", payment);
+        resData.putAll(orderMap);
         return resData;
     }
 
@@ -590,26 +625,35 @@ public class RideService {
         ResData resData = ResData.get();
         Long orderNo = rideForm.getOrderNo();
         if (orderNo == null || orderNo <= 0) {
-            return resData.setCode(ResData.C_PARAM_ERROR).setMsg("请输入订单号");
+            return resData.setCode(ResData.C_PARAM_ERROR).setMsg("请输入行车订单号");
         }
-        UserRide userRide = userRideRepository.findByOrderNo(orderNo);
-        if (userRide == null) {
-            return resData.setCode(1).setMsg("该订单不存在"); // err1
+        Payment payment = paymentRepository.findByOrderNo(orderNo);
+        if (payment == null) {
+            return resData.setCode(1).setMsg("该行程订单不存在"); // err1
         }
+        if (payment.getStatus() != 1) { // 已支付
+            return resData.setCode(2).setMsg("该行程订单未支付"); // err2
+        }
+        UserRide userRide = userRideRepository.findByPayment(payment);
+        if (userRide.getConfirmed()) {
+            return resData.setCode(3).setMsg("该行程已结束"); // err3
+        }
+        userRide.setConfirmed(true); // 已结束
+
         Ride ride = userRide.getRide();
         User owner = ride.getOwner();
-        Long money = ride.getReward().longValue() * userRide.getSeats();
-        // 司机收入明细
+        Long totalAmount = payment.getTotalAmount();
+        // 车主收入明细
         Balance balance = new Balance();
         balance.setCreateTime(LocalDateTime.now());
-        balance.setMoney(money);
-        balance.setOrderNo(orderNo);
-        balance.setStatus(1);
-        balance.setType(3);
+        balance.setMoney(totalAmount);
+        balance.setType(3); // 行程收入
         balance.setUserId(owner.getId());
-        balance = balanceRepository.save(balance);
+        balance.setPaymentId(payment.getId());
 
-        owner.setBalance(owner.getBalance() + money);
+        balance = balanceRepository.save(balance);
+        owner.setBalance(owner.getBalance() + totalAmount);
+        owner.setIncome(owner.getIncome() + totalAmount);
 
         return resData;
     }

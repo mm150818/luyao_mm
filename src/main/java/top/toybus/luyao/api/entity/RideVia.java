@@ -23,17 +23,17 @@ import lombok.Data;
 @Table(name = "tb_ride_via")
 @SuppressWarnings("serial")
 public class RideVia implements Serializable {
-	@Id
-	@GeneratedValue
-	private Long id;
+    @Id
+    @GeneratedValue
+    private Long id;
 
 	@Column(name = "ride_id")
 	private Long rideId;
 
-	private String point;
+    private String point;
 
-	@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-	@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-	private LocalDateTime time;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime time;
 
 }

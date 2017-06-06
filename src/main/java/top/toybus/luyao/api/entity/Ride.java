@@ -5,7 +5,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -45,17 +44,14 @@ public class Ride implements Serializable {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime time;
 
-    @Column(name = "start_point")
     private String startPoint;
 
-    @Column(name = "end_point")
     private String endPoint;
 
     private Long reward;
 
     private Integer seats;
 
-    @Column(name = "remain_seats")
     private Integer remainSeats;
 
     private Integer status;
@@ -65,11 +61,9 @@ public class Ride implements Serializable {
     private List<RideVia> rideViaList = new ArrayList<>(0);
 
     @JsonIgnore
-    @Column(name = "create_time")
     private LocalDateTime createTime;
 
     @JsonIgnore
-    @Column(name = "update_time")
     private LocalDateTime updateTime;
 
     @JsonInclude(Include.NON_NULL)

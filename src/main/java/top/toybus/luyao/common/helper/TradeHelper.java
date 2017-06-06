@@ -74,34 +74,34 @@ public class TradeHelper {
     /**
      * 获得支付订单
      */
-    public String aliAppPay(String outTradeNo, String body, String totalAmount) {
+    public Map<String, Object> aliAppPay(Long orderNo, String body, Long totalAmount) {
         // 实例化具体API对应的request类,类名称和接口名称对应,当前调用接口名称：alipay.trade.app.pay
         AlipayTradeAppPayRequest request = new AlipayTradeAppPayRequest();
         // SDK已经封装掉了公共参数，这里只需要传入业务参数。以下方法为sdk的model入参方式(model和biz_content同时存在的情况下取biz_content)。
         AlipayTradeAppPayModel model = new AlipayTradeAppPayModel();
         model.setSubject(body);
-        // model.setBody("我是测试数据");
-        model.setOutTradeNo(outTradeNo);
+        model.setOutTradeNo(orderNo.toString());
         // model.setTimeoutExpress("30m");
-        model.setTotalAmount(totalAmount);
+        model.setTotalAmount(String.format("%.2f", totalAmount.longValue() / 100.0));
         model.setProductCode("QUICK_MSECURITY_PAY");
         request.setBizModel(model);
         request.setNotifyUrl(tradeProps.getALI_NOTIFY_URL());
 
-        String result = null;
+        Map<String, Object> resultMap = new HashMap<>();
         try {
             // 这里和普通的接口调用不同，使用的是sdkExecute
             AlipayTradeAppPayResponse response = alipayClient.sdkExecute(request);
             if (response.isSuccess()) {
 //                System.out.println(response.getBody());
                 // 就是orderString 可以直接给客户端请求，无需再做处理。
-                result = response.getBody();
+                String orderStr = response.getBody();
+                resultMap.put("payOrder", orderStr);
             }
         } catch (AlipayApiException e) {
             log.error(e.getMessage(), e);
             throw new RuntimeException(e);
         }
-        return result;
+        return resultMap;
     }
 
     /**
@@ -111,13 +111,11 @@ public class TradeHelper {
         AlipayTradeQueryRequest request = new AlipayTradeQueryRequest();
         AlipayTradeQueryModel model = new AlipayTradeQueryModel();
         model.setOutTradeNo(outTradeNo);
-//        model.setTradeNo(tradeNo);
         request.setBizModel(model);
         String resultJson = null;
         try {
             AlipayTradeQueryResponse response = alipayClient.execute(request);
             if (response.isSuccess()) {
-//                System.out.println(response.getBody());
                 resultJson = response.getBody();
             }
         } catch (AlipayApiException e) {
@@ -182,7 +180,7 @@ public class TradeHelper {
         HttpPost httpPost = new HttpPost(url);
         FileInputStream instream = null;
         CloseableHttpResponse httpResponse = null;
-        Map<String, Object> resultMap = new HashMap<>();
+        Map<String, Object> resMap = new HashMap<>();
         Map<String, Object> params = new HashMap<>();
         params.put("appid", tradeProps.getWX_APPID());
         params.put("mch_id", tradeProps.getWX_MCH_ID());
@@ -217,7 +215,7 @@ public class TradeHelper {
             httpResponse = httpClient.execute(httpPost);
             HttpEntity entity = httpResponse.getEntity();
             String result = EntityUtils.toString(entity, "UTF-8");
-            resultMap = objectMapper.readerFor(Map.class).readValue(result);
+            resMap = objectMapper.readerFor(Map.class).readValue(result);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             throw new RuntimeException(e);
@@ -233,17 +231,18 @@ public class TradeHelper {
                 httpClient.close();
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
+                throw new RuntimeException(e);
             }
         }
-        return resultMap;
+        return resMap;
     }
 
     /**
      * 微信统一下单
      */
-    public Map<String, Object> wxUnifiedorder(String outTradeNo, String body, String totalAmount) {
+    public Map<String, Object> wxAppPay(Long orderNo, String body, Long totalAmount) {
         Map<String, Object> paramsMap = new HashMap<>();
-        paramsMap.put("out_trade_no", outTradeNo);
+        paramsMap.put("out_trade_no", orderNo);
         paramsMap.put("body", body);
         paramsMap.put("total_fee", totalAmount);
         paramsMap.put("spbill_create_ip", IpUtils
@@ -251,7 +250,8 @@ public class TradeHelper {
         paramsMap.put("notify_url", tradeProps.getWX_NOTIFY_URL());
         paramsMap.put("trade_type", "APP");
 
-        Map<String, Object> resultMap = this.doHttpsPost(tradeProps.getWX_UNIFIEDORDER_API(), paramsMap);
+        Map<String, Object> resultMap = new HashMap<>();
+        resultMap.put("payOrder", this.doHttpsPost(tradeProps.getWX_UNIFIEDORDER_API(), paramsMap));
         return resultMap;
     }
 
@@ -298,14 +298,29 @@ public class TradeHelper {
         return true;
     }
 
-    public static void main(String[] args) throws Exception {
-        ObjectMapper objectMapper = Jackson2ObjectMapperBuilder.xml().build();
-        Map<String, String> map = new HashMap<>();
-        map.put("name", "[{\"aaa\":111}]");
-        System.out.println(objectMapper.writerFor(Map.class).withRootName("xml").writeValueAsString(map));
+    /**
+     * 统一下单
+     */
+    public Map<String, Object> unifiedOrder(Integer way, Long orderNo, String body, Long totalAmount) {
+        Map<String, Object> resultMap = null;
+        if (way == 1) {
+            resultMap = this.aliAppPay(orderNo, body, totalAmount);
+        } else if (way == 2) {
+            resultMap = this.wxAppPay(orderNo, body, totalAmount);
+        }
+        return resultMap;
+    }
 
-        String xml = "<map><name>sunxg</name><value></value></map>";
-        System.out.println((Object) objectMapper.readerFor(Map.class).readValue(xml));
+    public static void main(String[] args) throws Exception {
+//        ObjectMapper objectMapper = Jackson2ObjectMapperBuilder.xml().build();
+//        Map<String, String> map = new HashMap<>();
+//        map.put("name", "[{\"aaa\":111}]");
+//        System.out.println(objectMapper.writerFor(Map.class).withRootName("xml").writeValueAsString(map));
+//
+//        String xml = "<map><name>sunxg</name><value></value></map>";
+//        System.out.println((Object) objectMapper.readerFor(Map.class).readValue(xml));
+
+//        System.out.println(String.format("%.2f", 133 / 100.0));
     }
 
 }

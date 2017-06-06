@@ -39,7 +39,7 @@ public class TradeController {
     /**
      * 统一下单
      */
-    @LoginRequired
+    /*@LoginRequired
     @RequestMapping("/unifiedOrder")
     public ResData unifiedOrder(TradeForm tradeForm) {
         ResData resData = null;
@@ -51,7 +51,7 @@ public class TradeController {
             resData.setCode(-1).setMsg(e.getMessage());
         }
         return resData;
-    }
+    }*/
 
     /**
      * 查询订单

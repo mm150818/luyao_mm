@@ -41,10 +41,8 @@ public class RideUser implements Serializable {
     private Integer seats;
 
     @JsonIgnore
-    @Column(name = "create_time")
     private LocalDateTime createTime;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    @Column(name = "update_time")
     private Date updateTime;
 }

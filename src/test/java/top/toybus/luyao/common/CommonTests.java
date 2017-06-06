@@ -1,5 +1,7 @@
 package top.toybus.luyao.common;
 
+import java.util.List;
+
 import javax.transaction.Transactional;
 
 import org.junit.Test;
@@ -18,6 +20,7 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
 import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
 
+import top.toybus.luyao.api.bean.UserBean;
 import top.toybus.luyao.api.entity.User;
 import top.toybus.luyao.api.entity.Vehicle;
 import top.toybus.luyao.api.repository.UserRepository;
@@ -40,8 +43,9 @@ public class CommonTests {
 
     @Test
     public void test2() throws Exception {
-        User user = userRepository.findOne(1L);
-        System.out.println(Jackson2ObjectMapperBuilder.json().build().writeValueAsString(user));
+        List<UserBean> userBeanList = userRepository.findListBy(new PageRequest(0, 100));
+        System.out.println(Jackson2ObjectMapperBuilder.json().build().writerWithDefaultPrettyPrinter()
+                .writeValueAsString(userBeanList));
     }
 
     public static void main(String[] args) throws Exception {
@@ -69,5 +73,4 @@ public class CommonTests {
         System.out.println(objectWriter.writeValueAsString(user));
 
     }
-
 }

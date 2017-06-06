@@ -5,7 +5,6 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -34,6 +33,9 @@ public class Balance implements Serializable {
     @JsonIgnore
     private Long userId;
 
+    @JsonIgnore
+    private Long paymentId;
+
     @JsonInclude(Include.NON_NULL)
     private Integer way;
 
@@ -42,13 +44,7 @@ public class Balance implements Serializable {
     private Integer type;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    @Column(name = "create_time")
     private LocalDateTime createTime;
-
-    @Column(name = "order_no")
-    private Long orderNo;
-
-    private Integer status;
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public static final Map<Integer, String> typeMap = new HashMap() {

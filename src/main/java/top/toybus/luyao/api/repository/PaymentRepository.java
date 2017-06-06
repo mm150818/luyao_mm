@@ -5,5 +5,6 @@ import top.toybus.luyao.common.repository.BaseRepository;
 
 public interface PaymentRepository extends BaseRepository<Payment, Long> {
 
-    Payment findByOutTradeNo(String outTradeNo);
+    Payment findByOrderNo(Long orderNo);
+
 }
