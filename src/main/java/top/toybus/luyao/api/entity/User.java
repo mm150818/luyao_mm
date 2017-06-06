@@ -41,7 +41,6 @@ public class User implements Serializable {
     @Column(updatable = false)
     private String password;
 
-    @Column(name = "head_img")
     private String headImg;
 
     private String nickname;
@@ -59,26 +58,24 @@ public class User implements Serializable {
 
     private Long income;
 
-    @Column(name = "draw_cash")
     private Long drawCash;
 
-    @Column(name = "ride_count")
     private Integer rideCount;
 
     private Integer status;
 
     private Boolean owner;
 
-    @JsonInclude(Include.NON_NULL)
+    @JsonIgnore
+    private Long vehicleId;
+
     @Transient
     private Vehicle vehicle;
 
     @JsonIgnore
-    @Column(name = "create_time")
     private LocalDateTime createTime;
 
     @JsonIgnore
-    @Column(name = "update_time")
     private LocalDateTime updateTime;
 
     /**
@@ -96,6 +93,10 @@ public class User implements Serializable {
     @JsonIgnore
     public boolean isNotOwner() {
         return this.owner == null || !this.owner;
+    }
+
+    public String getOwnerStr() {
+        return this.owner == null ? "不是车主" : this.owner ? "是车主" : "车主审核中";
     }
 
 }

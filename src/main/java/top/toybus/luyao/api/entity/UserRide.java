@@ -12,6 +12,9 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
 
 import lombok.Data;
 
@@ -41,16 +44,25 @@ public class UserRide implements Serializable {
     @JoinColumn(name = "ride_via_id")
     private RideVia rideVia;
 
-    @Column(name = "order_no")
-    private Long orderNo;
+    @JsonUnwrapped
+    @JsonIgnoreProperties({ "id", "tradeNo", "createTime", "notifyTime" })
+    @ManyToOne
+    @JoinColumn(name = "payment_id")
+    private Payment payment;
 
-    private Integer status;
+    private Boolean confirmed;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    @Column(name = "create_time")
     private LocalDateTime createTime;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    @Column(name = "update_time")
     private LocalDateTime updateTime;
+
+    @JsonIgnore
+    public Long getTotalAmount() {
+        if (this.ride != null && this.seats != null) {
+            return this.ride.getReward().longValue() * this.seats.intValue();
+        }
+        return null;
+    }
 }

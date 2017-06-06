@@ -5,12 +5,12 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
 
 public interface UserBean {
-	String getNickname();
+    String getNickname();
 
-	String getMobile();
+    String getMobile();
 
-	Integer getStatus();
+    Integer getStatus();
 
-	@Value("#{target.userRideList.![ride.name]}")
-	List<String> getRideList();
+    @Value("#{target.occupation}")
+    List<String> getRideList();
 }

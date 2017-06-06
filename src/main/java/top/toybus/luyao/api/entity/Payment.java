@@ -2,12 +2,16 @@ package top.toybus.luyao.api.entity;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import lombok.Data;
 
@@ -19,29 +23,41 @@ import lombok.Data;
 @Table(name = "tb_payment")
 @SuppressWarnings("serial")
 public class Payment implements Serializable {
+    @JsonIgnore
     @Id
     @GeneratedValue
     private Long id;
 
     private Integer type;
 
-    @Column(name = "target_id")
-    private Long targetId;
-
     private Integer way;
 
-    @Column(name = "out_trade_no")
-    private Long outTradeNo;
+    private Long orderNo;
 
-    @Column(name = "trade_no")
+    @JsonIgnore
     private String tradeNo;
 
-    @Column(name = "total_amount")
     private Long totalAmount;
 
-    @Column(name = "create_time")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createTime;
 
-    @Column(name = "notify_time")
+    @JsonIgnore
     private LocalDateTime notifyTime;
+
+    private Integer status;
+
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    public static final Map<Integer, String> statusMap = new HashMap() {
+        {
+            put(0, "未支付");
+            put(1, "已支付");
+            put(2, "已取消");
+            put(3, "已关闭");
+        }
+    };
+
+    public String getStatusStr() {
+        return statusMap.get(this.status);
+    }
 }

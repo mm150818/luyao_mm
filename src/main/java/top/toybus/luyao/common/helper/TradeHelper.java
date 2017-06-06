@@ -74,57 +74,48 @@ public class TradeHelper {
     /**
      * 获得支付订单
      */
-    public String aliAppPay(String outTradeNo, String body, String totalAmount) {
+    public AlipayTradeAppPayResponse aliAppPay(String orderNo, String body, Long totalAmount) {
         // 实例化具体API对应的request类,类名称和接口名称对应,当前调用接口名称：alipay.trade.app.pay
         AlipayTradeAppPayRequest request = new AlipayTradeAppPayRequest();
         // SDK已经封装掉了公共参数，这里只需要传入业务参数。以下方法为sdk的model入参方式(model和biz_content同时存在的情况下取biz_content)。
         AlipayTradeAppPayModel model = new AlipayTradeAppPayModel();
         model.setSubject(body);
-        // model.setBody("我是测试数据");
-        model.setOutTradeNo(outTradeNo);
+        model.setOutTradeNo(orderNo);
         // model.setTimeoutExpress("30m");
-        model.setTotalAmount(totalAmount);
+        model.setTotalAmount(String.format("%.2f", totalAmount.longValue() / 100.0));
         model.setProductCode("QUICK_MSECURITY_PAY");
         request.setBizModel(model);
         request.setNotifyUrl(tradeProps.getALI_NOTIFY_URL());
 
-        String result = null;
+        AlipayTradeAppPayResponse response = null;
         try {
             // 这里和普通的接口调用不同，使用的是sdkExecute
-            AlipayTradeAppPayResponse response = alipayClient.sdkExecute(request);
-            if (response.isSuccess()) {
-//                System.out.println(response.getBody());
-                // 就是orderString 可以直接给客户端请求，无需再做处理。
-                result = response.getBody();
-            }
+            response = alipayClient.sdkExecute(request);
+            // System.out.println(response.getBody());
+            // 就是orderString 可以直接给客户端请求，无需再做处理。
         } catch (AlipayApiException e) {
             log.error(e.getMessage(), e);
             throw new RuntimeException(e);
         }
-        return result;
+        return response;
     }
 
     /**
      * 支付宝交易查询
      */
-    public String AliQuery(String outTradeNo) {
+    public AlipayTradeQueryResponse AliQuery(String orderNo) {
         AlipayTradeQueryRequest request = new AlipayTradeQueryRequest();
         AlipayTradeQueryModel model = new AlipayTradeQueryModel();
-        model.setOutTradeNo(outTradeNo);
-//        model.setTradeNo(tradeNo);
+        model.setOutTradeNo(orderNo.toString());
         request.setBizModel(model);
-        String resultJson = null;
+        AlipayTradeQueryResponse response = null;
         try {
-            AlipayTradeQueryResponse response = alipayClient.execute(request);
-            if (response.isSuccess()) {
-//                System.out.println(response.getBody());
-                resultJson = response.getBody();
-            }
+            response = alipayClient.execute(request);
         } catch (AlipayApiException e) {
             log.error(e.getMessage(), e);
             throw new RuntimeException(e);
         }
-        return resultJson;
+        return response;
     }
 
     public boolean verifyAliSign(Map<String, String[]> paramsMap) {
@@ -182,7 +173,7 @@ public class TradeHelper {
         HttpPost httpPost = new HttpPost(url);
         FileInputStream instream = null;
         CloseableHttpResponse httpResponse = null;
-        Map<String, Object> resultMap = new HashMap<>();
+        Map<String, Object> resMap = new HashMap<>();
         Map<String, Object> params = new HashMap<>();
         params.put("appid", tradeProps.getWX_APPID());
         params.put("mch_id", tradeProps.getWX_MCH_ID());
@@ -217,7 +208,7 @@ public class TradeHelper {
             httpResponse = httpClient.execute(httpPost);
             HttpEntity entity = httpResponse.getEntity();
             String result = EntityUtils.toString(entity, "UTF-8");
-            resultMap = objectMapper.readerFor(Map.class).readValue(result);
+            resMap = objectMapper.readerFor(Map.class).readValue(result);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             throw new RuntimeException(e);
@@ -233,17 +224,18 @@ public class TradeHelper {
                 httpClient.close();
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
+                throw new RuntimeException(e);
             }
         }
-        return resultMap;
+        return resMap;
     }
 
     /**
      * 微信统一下单
      */
-    public Map<String, Object> wxUnifiedorder(String outTradeNo, String body, String totalAmount) {
+    public Map<String, Object> wxAppPay(String orderNo, String body, Long totalAmount) {
         Map<String, Object> paramsMap = new HashMap<>();
-        paramsMap.put("out_trade_no", outTradeNo);
+        paramsMap.put("out_trade_no", orderNo);
         paramsMap.put("body", body);
         paramsMap.put("total_fee", totalAmount);
         paramsMap.put("spbill_create_ip", IpUtils
@@ -258,9 +250,9 @@ public class TradeHelper {
     /**
      * 微信查询订单
      */
-    public Map<String, Object> wxOrderQuery(String outTradeNo) {
+    public Map<String, Object> wxOrderQuery(String orderNo) {
         Map<String, Object> paramsMap = new HashMap<>();
-        paramsMap.put("out_trade_no", outTradeNo);
+        paramsMap.put("out_trade_no", orderNo);
         Map<String, Object> resultMap = this.doHttpsPost(tradeProps.getWX_ORDERQUERY_API(), paramsMap);
         return resultMap;
     }
@@ -298,14 +290,46 @@ public class TradeHelper {
         return true;
     }
 
-    public static void main(String[] args) throws Exception {
-        ObjectMapper objectMapper = Jackson2ObjectMapperBuilder.xml().build();
-        Map<String, String> map = new HashMap<>();
-        map.put("name", "[{\"aaa\":111}]");
-        System.out.println(objectMapper.writerFor(Map.class).withRootName("xml").writeValueAsString(map));
+    /**
+     * 统一下单
+     */
+    public Map<String, Object> unifiedOrder(Integer way, Long orderNo, String body, Long totalAmount) {
+        Map<String, Object> resultMap = new HashMap<>();
+        if (way == 1) {
+            AlipayTradeAppPayResponse payResponse = this.aliAppPay(orderNo.toString(), body, totalAmount);
+            resultMap.put("payResult", payResponse);
+        } else if (way == 2) {
+            Map<String, Object> resMap = this.wxAppPay(orderNo.toString(), body, totalAmount);
+            resultMap.put("payResult", resMap);
+        }
+        return resultMap;
+    }
 
-        String xml = "<map><name>sunxg</name><value></value></map>";
-        System.out.println((Object) objectMapper.readerFor(Map.class).readValue(xml));
+    /**
+     * 统一下单
+     */
+    public Map<String, Object> orderQuery(Integer way, Long orderNo) {
+        Map<String, Object> resultMap = new HashMap<>();
+        if (way == 1) {
+            AlipayTradeQueryResponse response = this.AliQuery(orderNo.toString());
+            resultMap.put("payResult", response);
+        } else if (way == 2) {
+            Map<String, Object> resMap = this.wxOrderQuery(orderNo.toString());
+            resultMap.put("payResult", resMap);
+        }
+        return resultMap;
+    }
+
+    public static void main(String[] args) throws Exception {
+//        ObjectMapper objectMapper = Jackson2ObjectMapperBuilder.xml().build();
+//        Map<String, String> map = new HashMap<>();
+//        map.put("name", "[{\"aaa\":111}]");
+//        System.out.println(objectMapper.writerFor(Map.class).withRootName("xml").writeValueAsString(map));
+//
+//        String xml = "<map><name>sunxg</name><value></value></map>";
+//        System.out.println((Object) objectMapper.readerFor(Map.class).readValue(xml));
+
+//        System.out.println(String.format("%.2f", 133 / 100.0));
     }
 
 }

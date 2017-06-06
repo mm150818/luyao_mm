@@ -4,8 +4,8 @@ package top.toybus.luyao.api.entity;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
-import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
@@ -24,33 +24,27 @@ import top.toybus.luyao.common.properties.FileProperties;
 public class Vehicle implements Serializable {
     @JsonIgnore
     @Id
-    @Column(name = "user_id")
-    private Long userId;
+    @GeneratedValue
+    private Long id;
 
     private String no;
 
-    @Column(name = "plate_no")
     private String plateNo;
 
     private String model;
 
-    @Column(name = "travel_img")
     private String travelImg;
 
-    @Column(name = "driving_img")
     private String drivingImg;
 
     private String img;
 
-    @Column(name = "ride_template_id")
     private Long rideTemplateId;
 
     @JsonIgnore
-    @Column(name = "create_time")
     private LocalDateTime createTime;
 
     @JsonIgnore
-    @Column(name = "update_time")
     private LocalDateTime updateTime;
 
     public String getTravelImg() {
@@ -58,7 +52,7 @@ public class Vehicle implements Serializable {
     }
 
     public String getDrivingImg() {
-        return FileProperties.BASE_URL + this.travelImg;
+        return FileProperties.BASE_URL + this.drivingImg;
     }
 
     public String getImg() {

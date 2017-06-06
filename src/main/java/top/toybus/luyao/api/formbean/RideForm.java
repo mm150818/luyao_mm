@@ -47,4 +47,6 @@ public class RideForm extends BaseForm {
     private LocalDateTime endTime;
 
     private Long orderNo;
+
+    private Integer way;
 }

@@ -40,16 +40,11 @@ public class TradeService {
     /**
      * 检查用户订单和支付方式
      */
-    private ResData checkOrderNoAndWay(TradeForm tradeForm) {
+    private ResData checkOrderNo(TradeForm tradeForm) {
         ResData resData = ResData.get();
         Long orderNo = tradeForm.getOrderNo();
         if (orderNo == null || orderNo <= 0) {
             return resData.setCode(ResData.C_PARAM_ERROR).setMsg("订单号不能为空");
-        }
-        if (tradeForm.getWay() == null) {
-            return resData.setCode(ResData.C_PARAM_ERROR).setMsg("请选择支付方式");
-        } else if (tradeForm.getWay() != 1 && tradeForm.getWay() != 2) {
-            return resData.setCode(ResData.C_PARAM_ERROR).setMsg("支付方式格式不正确");
         }
         return resData;
     }
@@ -58,54 +53,10 @@ public class TradeService {
      * 检验数据
      */
     private boolean verifyAliData(Payment pay, String outTradeNo, String totalAmount, String sellerId, String appId) {
-        return pay != null && pay.getOutTradeNo().equals(outTradeNo)
+        return pay != null && pay.getOrderNo().toString().equals(outTradeNo)
                 && pay.getTotalAmount().toString().equals(totalAmount)
                 && tradeHelper.getTradeProps().getALI_SELLER_ID().equals(sellerId)
                 && tradeHelper.getTradeProps().getALI_APP_ID().equals(appId);
-    }
-
-    /**
-     * 支付宝异步通知
-     */
-    public String aliAsyncNotify(TradeForm tradeForm) {
-        ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder
-                .getRequestAttributes();
-        HttpServletRequest request = requestAttributes.getRequest();
-        boolean signVerified = tradeHelper.verifyAliSign(request.getParameterMap());
-        if (signVerified) {
-            String tradeStatus = request.getParameter("trade_status");
-            String outTradeNo = request.getParameter("out_trade_no");
-            String totalAmount = request.getParameter("total_amount");
-            String sellerId = request.getParameter("seller_id");
-            String appId = request.getParameter("app_id");
-
-            Payment pay = paymentRepository.findByOutTradeNo(outTradeNo);
-//            Integer type = pay.getType(); // 1用户订单，2账户明细
-            if (this.verifyAliData(pay, outTradeNo, totalAmount, sellerId, appId)) {
-                Long userRideId = pay.getTargetId();
-                UserRide userRide = userRideRepository.findOne(userRideId);
-
-                if ("TRADE_SUCCESS".equals(tradeStatus) || "TRADE_FINISHED".equals(tradeStatus)) {
-                    if (userRide.getStatus() == 2) { // 处理中
-                        userRide.setStatus(3); // 已支付
-                        userRide.setUpdateTime(LocalDateTime.now());
-
-                        pay.setNotifyTime(LocalDateTime.now());
-
-                        sendOrderOkSms(tradeForm, userRide);
-                    }
-                } else {
-                    if (userRide.getStatus() == 2) { // 处理中
-                        userRide.setStatus(4); // 未支付
-                        userRide.setUpdateTime(LocalDateTime.now());
-
-                        pay.setNotifyTime(LocalDateTime.now());
-                    }
-                }
-                return "success";
-            }
-        }
-        return "failure";
     }
 
     /**
@@ -123,6 +74,50 @@ public class TradeService {
     }
 
     /**
+     * 支付宝异步通知
+     */
+    public String aliAsyncNotify(TradeForm tradeForm) {
+        ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder
+                .getRequestAttributes();
+        HttpServletRequest request = requestAttributes.getRequest();
+        boolean signVerified = tradeHelper.verifyAliSign(request.getParameterMap());
+        if (signVerified) {
+            String tradeStatus = request.getParameter("trade_status");
+            String outTradeNo = request.getParameter("out_trade_no");
+            String tradeNo = request.getParameter("trade_no");
+            String totalAmount = request.getParameter("total_amount");
+            String sellerId = request.getParameter("seller_id");
+            String appId = request.getParameter("app_id");
+
+            Long orderNo = Long.valueOf(outTradeNo);
+            Payment payment = paymentRepository.findByOrderNo(orderNo);
+            if (this.verifyAliData(payment, outTradeNo, totalAmount, sellerId, appId)) {
+                payment.setTradeNo(tradeNo);
+                payment.setNotifyTime(LocalDateTime.now());
+
+                if ("TRADE_SUCCESS".equals(tradeStatus) || "TRADE_FINISHED".equals(tradeStatus)) {
+                    if (payment.getStatus() == 0) {
+                        payment.setStatus(1);
+
+                        Integer type = payment.getType();
+                        if (type == 1) { // 行程订单
+                            UserRide userRide = userRideRepository.findByPayment(payment);
+                            sendOrderOkSms(tradeForm, userRide);
+                        }
+                    }
+                } else {
+                    if (payment.getStatus() == 0) {
+                        payment.setStatus(3);
+
+                    }
+                }
+                return "success";
+            }
+        }
+        return "failure";
+    }
+
+    /**
      * 微信异步通知处理
      */
     public String wxAsyncNotify(TradeForm tradeForm) {
@@ -130,31 +125,32 @@ public class TradeService {
         Map<String, Object> paramsMap = tradeHelper.getWxReqParamsMap();
         boolean signVerified = tradeHelper.verifyWxSign(paramsMap);
         Object returnCodeObj = paramsMap.get("return_code");
-        Object outTradeNoObj = paramsMap.get("out_trade_no");
         returnMap.put("return_code", "FAIL");
-        if (signVerified && "SUCCESS".equals(returnCodeObj) && outTradeNoObj != null) {
-            String outTradeNo = outTradeNoObj.toString();
-            Object resultCodeObj = paramsMap.get("result_code");
-            Payment pay = paymentRepository.findByOutTradeNo(outTradeNo);
-            if (pay.getTotalAmount().toString().equals(paramsMap.get("total_fee"))) {
-                Long userRideId = pay.getTargetId();
-                UserRide userRide = userRideRepository.findOne(userRideId);
+        if (signVerified && "SUCCESS".equals(returnCodeObj)) {
+            String outTradeNo = paramsMap.get("out_trade_no").toString();
+            Long orderNo = Long.valueOf(outTradeNo);
+            String resultCode = paramsMap.get("result_code").toString();
+            String transactionId = paramsMap.get("transaction_id").toString();
 
-                if ("SUCCESS".equals(resultCodeObj)) {
-                    if (userRide.getStatus() == 2) { // 处理中
-                        userRide.setStatus(3); // 已支付
-                        userRide.setUpdateTime(LocalDateTime.now());
+            Payment payment = paymentRepository.findByOrderNo(orderNo);
+            if (payment.getTotalAmount().toString().equals(paramsMap.get("total_fee"))) {
+                payment.setTradeNo(transactionId);
+                payment.setNotifyTime(LocalDateTime.now());
 
-                        pay.setNotifyTime(LocalDateTime.now());
+                if ("SUCCESS".equals(resultCode)) {
+                    if (payment.getStatus() == 0) {
+                        payment.setStatus(1);
 
-                        sendOrderOkSms(tradeForm, userRide);
+                        Integer type = payment.getType();
+                        if (type == 1) { // 行程订单
+                            UserRide userRide = userRideRepository.findByPayment(payment);
+                            sendOrderOkSms(tradeForm, userRide);
+                        }
                     }
                 } else {
-                    if (userRide.getStatus() == 2) { // 处理中
-                        userRide.setStatus(4); // 未支付
-                        userRide.setUpdateTime(LocalDateTime.now());
+                    if (payment.getStatus() == 0) {
+                        payment.setStatus(3);
 
-                        pay.setNotifyTime(LocalDateTime.now());
                     }
                 }
                 returnMap.put("return_code", "SUCCESS");
@@ -171,14 +167,14 @@ public class TradeService {
                     .writeValueAsString(returnMap);
             return resultStr;
         } catch (Exception e) {
-            return null;
+            throw new RuntimeException(e);
         }
     }
 
     /**
      * 统一下单
      */
-    public ResData unifiedOrder(TradeForm tradeForm) {
+    /*public ResData unifiedOrder(TradeForm tradeForm) {
         ResData resData = this.checkOrderNoAndWay(tradeForm);
         if (!resData.isOk()) {
             return resData;
@@ -193,13 +189,13 @@ public class TradeService {
         String body = "马洲路遥-预定行程";
         if (way == 1) {
             String result = tradeHelper.aliAppPay(orderNo.toString(), body, String.format("%.2f", totalAmount / 100.0));
-            resData.put("result", result);
+            resData.put("orderStr", result);
         } else if (way == 2) {
             Map<String, Object> resultMap = tradeHelper.wxUnifiedorder(orderNo.toString(), body,
                     totalAmount.toString());
             resData.putAll(resultMap);
         }
-
+    
         // 保存对账单
         Payment pay = new Payment();
         pay.setType(1);
@@ -209,29 +205,28 @@ public class TradeService {
         pay.setWay(tradeForm.getWay()); // 1支付宝支付,2微信支付
         pay.setCreateTime(LocalDateTime.now());
         paymentRepository.save(pay);
-
+    
         userRide.setStatus(2); // 订单状态：处理中
-
+    
         return resData;
-    }
+    }*/
 
     /**
      * 查询订单
      */
     public ResData orderQuery(TradeForm tradeForm) {
-        ResData resData = this.checkOrderNoAndWay(tradeForm);
+        ResData resData = this.checkOrderNo(tradeForm);
         if (!resData.isOk()) {
             return resData;
         }
-        String outTradeNo = tradeForm.getOrderNo().toString();
-        Integer way = tradeForm.getWay();
-        if (way == 1) {
-            String result = tradeHelper.AliQuery(outTradeNo);
-            resData.put("result", result);
-        } else if (way == 2) {
-            Map<String, Object> resultMap = tradeHelper.wxOrderQuery(outTradeNo);
-            resData.putAll(resultMap);
+        Long orderNo = tradeForm.getOrderNo();
+        Payment payment = paymentRepository.findByOrderNo(orderNo);
+        if (payment == null) {
+            return resData.setCode(1).setMsg("该订单不存在");
         }
+        Integer way = payment.getWay();
+        Map<String, Object> resultMap = tradeHelper.orderQuery(way, orderNo);
+        resData.putAll(resultMap);
         return resData;
     }
 }

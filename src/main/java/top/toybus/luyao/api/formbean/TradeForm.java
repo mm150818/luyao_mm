@@ -11,6 +11,4 @@ public class TradeForm extends BaseForm {
 
     private Long orderNo;
 
-    private Integer way;
-
 }
