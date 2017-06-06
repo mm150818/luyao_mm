@@ -243,7 +243,8 @@ public class TradeHelper {
         paramsMap.put("notify_url", tradeProps.getWX_NOTIFY_URL());
         paramsMap.put("trade_type", "APP");
 
-        Map<String, Object> resultMap = this.doHttpsPost(tradeProps.getWX_UNIFIEDORDER_API(), paramsMap);
+        Map<String, Object> resultMap = new HashMap<>();
+        resultMap.put("payOrder", this.doHttpsPost(tradeProps.getWX_UNIFIEDORDER_API(), paramsMap));
         return resultMap;
     }
 
@@ -306,7 +307,7 @@ public class TradeHelper {
     }
 
     /**
-     * 统一下单
+     * 订单查询
      */
     public Map<String, Object> orderQuery(Integer way, Long orderNo) {
         Map<String, Object> resultMap = new HashMap<>();
