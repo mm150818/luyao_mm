@@ -39,6 +39,10 @@ public class RideUser implements Serializable {
     private User user;
 
     private Integer seats;
+    
+    @ManyToOne
+    @JoinColumn(name = "ride_via_id")
+    private RideVia rideVia;
 
     @JsonIgnore
     private LocalDateTime createTime;

@@ -72,9 +72,9 @@ public class RideService {
             return resData.setCode(1).setMsg("您不是车主"); // err1
         }
         // 一个用户（车主认证过的）在当天0-24时间段内只能发布一个班次信息
-        long count = rideRepository.countByPubToday(loginUser);
+        long count = rideRepository.countByOwnerAndTime(loginUser, rideForm.getTime());
         if (count > 0) {
-            return resData.setCode(2).setMsg("在当天0-24时间段内只能发布一个班次信息"); // err2
+            return resData.setCode(2).setMsg("在当天0-24点时间段内只能发布一个班次信息"); // err2
         }
 
         resData = this.checkRideForm(rideForm);
