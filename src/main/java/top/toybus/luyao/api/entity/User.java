@@ -3,6 +3,8 @@ package top.toybus.luyao.api.entity;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -95,8 +97,25 @@ public class User implements Serializable {
         return this.owner == null || !this.owner;
     }
 
+    public String getSexStr() {
+        return this.sex == null ? "" : this.sex == 1 ? "男" : this.sex == 0 ? "女" : "未知(保密)";
+    }
+
     public String getOwnerStr() {
         return this.owner == null ? "不是车主" : this.owner ? "是车主" : "车主审核中";
+    }
+
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    public static final Map<Integer, String> statusMap = new HashMap() {
+        {
+            put(0, "未登录");
+            put(1, "已登录");
+            put(-1, "用户不正常(冻结)");
+        }
+    };
+
+    public String getStatusStr() {
+        return statusMap.get(this.status);
     }
 
 }

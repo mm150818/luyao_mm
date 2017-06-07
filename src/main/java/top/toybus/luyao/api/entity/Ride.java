@@ -3,7 +3,9 @@ package top.toybus.luyao.api.entity;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -78,5 +80,18 @@ public class Ride implements Serializable {
     @JsonIgnore
     public String getStartEndPoint() {
         return this.startPoint + "—" + this.endPoint;
+    }
+
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    public static final Map<Integer, String> statusMap = new HashMap() {
+        {
+            put(0, "已发布");
+            put(1, "已结束");
+            put(2, "已取消");
+        }
+    };
+
+    public String getStatusStr() {
+        return statusMap.get(this.status);
     }
 }

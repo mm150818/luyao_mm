@@ -20,6 +20,8 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.alipay.api.response.AlipayFundTransToaccountTransferResponse;
+
 import top.toybus.luyao.api.entity.Balance;
 import top.toybus.luyao.api.entity.Payment;
 import top.toybus.luyao.api.entity.Ride;
@@ -39,6 +41,7 @@ import top.toybus.luyao.api.repository.VehicleRepository;
 import top.toybus.luyao.common.bean.ResData;
 import top.toybus.luyao.common.helper.SmsHelper;
 import top.toybus.luyao.common.helper.TradeHelper;
+import top.toybus.luyao.common.util.FormatUtils;
 import top.toybus.luyao.common.util.PageUtils;
 import top.toybus.luyao.common.util.UUIDUtils;
 import top.toybus.luyao.common.util.ValidatorUtils;
@@ -445,8 +448,11 @@ public class UserService {
             public Predicate toPredicate(Root<UserRide> root, CriteriaQuery<?> query, CriteriaBuilder cb) {
                 Predicate predicate = cb.conjunction();
                 List<Expression<Boolean>> expressions = predicate.getExpressions();
-                expressions.add(cb.equal(root.get("userId").as(Long.class), rideForm.getLoginUser().getId()));
                 root.fetch(root.getModel().getSingularAttribute("ride", Ride.class), JoinType.LEFT);
+                root.fetch(root.getModel().getSingularAttribute("payment", Payment.class), JoinType.LEFT);
+
+                expressions.add(cb.equal(root.get("userId").as(Long.class), rideForm.getLoginUser().getId()));
+                expressions.add(cb.notEqual(root.get("payment").get("status").as(Integer.class), 2));
                 // 行程开始时间
                 if (rideForm.getStartTime() != null) {
                     expressions.add(cb.greaterThanOrEqualTo(root.get("ride").get("time").as(LocalDateTime.class),
@@ -521,8 +527,9 @@ public class UserService {
         Integer way = userForm.getWay();
         Long money = userForm.getMoney();
         Long orderNo = UUIDUtils.getOrderNo();
+        User loginUser = userForm.getLoginUser();
 
-        Map<String, Object> orderMap = tradeHelper.unifiedOrder(way, orderNo, "马洲路遥-充值", money);
+        Map<String, Object> resultMap = tradeHelper.unifiedOrder(way, orderNo, "马洲路遥-充值", money);
 
         Payment payment = new Payment();
         payment.setCreateTime(LocalDateTime.now());
@@ -531,11 +538,12 @@ public class UserService {
         payment.setWay(userForm.getWay());
         payment.setStatus(0);
         payment.setType(2);
+        payment.setUserId(loginUser.getId());
 
         payment = paymentRepository.save(payment);
 
         resData.put("payment", payment);
-        resData.putAll(orderMap);
+        resData.putAll(resultMap);
         return resData;
     }
 
@@ -552,12 +560,24 @@ public class UserService {
         } else if (userForm.getWay() != 1 && userForm.getWay() != 2) {
             return resData.setCode(ResData.C_PARAM_ERROR).setMsg("支付方式格式不正确");
         }
-
         Integer way = userForm.getWay();
+        if (way == 1) {
+            if (StringUtils.isBlank(userForm.getAccount())) {
+                return resData.setCode(ResData.C_PARAM_ERROR).setMsg("请输入支付宝收款方账户");
+            } else if (StringUtils.length(userForm.getAccount()) > 100) {
+                return resData.setCode(ResData.C_PARAM_ERROR).setMsg("支付宝收款方账户格式不正确");
+            }
+        }
+        User loginUser = userForm.getLoginUser();
         Long money = userForm.getMoney();
+        Long balance = loginUser.getBalance(); // 账户余额
+        if (balance.longValue() < money.longValue()) {
+            return resData.setCode(1).setMsg("账户余额目前为" + FormatUtils.moneyCent2Yuan(balance) + "元"); // err1
+        }
+        String account = userForm.getAccount();
         Long orderNo = UUIDUtils.getOrderNo();
 
-        Map<String, Object> orderMap = tradeHelper.unifiedOrder(way, orderNo, "马洲路遥-提现", money);
+        Map<String, Object> resultMap = tradeHelper.transfer(way, orderNo, "马洲路遥-提现", money, account);
 
         Payment payment = new Payment();
         payment.setCreateTime(LocalDateTime.now());
@@ -565,12 +585,45 @@ public class UserService {
         payment.setOrderNo(orderNo);
         payment.setWay(userForm.getWay());
         payment.setType(3);
-        payment.setStatus(0);
+        payment.setUserId(loginUser.getId());
 
-        payment = paymentRepository.save(payment);
+        boolean payOk = false;
+        if (way == 1) {
+            AlipayFundTransToaccountTransferResponse response = (AlipayFundTransToaccountTransferResponse) resultMap
+                    .get("payResult");
+            payment.setTradeNo(response.getOrderId());
+            if (response.isSuccess()) {
+                payment.setStatus(1);
+                payment.setNotifyTime(LocalDateTime.now());
+
+                payOk = true;
+            } else {
+                payment.setStatus(3);
+            }
+        } else if (way == 2) {
+//            Object object = resultMap.get("payResult");
+        }
+
+        if (payOk) {
+            payment = paymentRepository.save(payment);
+
+            loginUser.setBalance(loginUser.getBalance() - money);
+            loginUser.setDrawCash(loginUser.getDrawCash() + money);
+            userRepository.save(loginUser);
+
+            Balance balance2 = new Balance();
+            balance2.setCreateTime(LocalDateTime.now());
+            balance2.setMoney(money);
+            balance2.setPaymentId(payment.getId());
+            balance2.setType(2);
+            balance2.setUserId(loginUser.getId());
+            balance2.setWay(way);
+
+            balanceRepository.save(balance2);
+        }
 
         resData.put("payment", payment);
-        resData.putAll(orderMap);
+        resData.putAll(resultMap);
 
         return resData;
     }

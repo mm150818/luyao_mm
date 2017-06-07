@@ -10,7 +10,7 @@ import lombok.Data;
 @Data
 public class TradeProperties {
     // alipay
-    private String ALI_URL = "https://openapi.alipay.com/gateway.do";
+    private String ALI_URL;
     private String ALI_FORMAT = "json";
     private String ALI_CHARSET = "UTF-8";
     private String ALI_SIGN_TYPE = "RSA2";

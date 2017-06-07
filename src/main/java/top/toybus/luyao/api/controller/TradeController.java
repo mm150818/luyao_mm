@@ -37,23 +37,6 @@ public class TradeController {
     }
 
     /**
-     * 统一下单
-     */
-    /*@LoginRequired
-    @RequestMapping("/unifiedOrder")
-    public ResData unifiedOrder(TradeForm tradeForm) {
-        ResData resData = null;
-        try {
-            resData = tradeService.unifiedOrder(tradeForm);
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-            resData = ResData.get();
-            resData.setCode(-1).setMsg(e.getMessage());
-        }
-        return resData;
-    }*/
-
-    /**
      * 查询订单
      */
     @LoginRequired

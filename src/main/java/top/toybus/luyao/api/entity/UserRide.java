@@ -65,4 +65,8 @@ public class UserRide implements Serializable {
         }
         return null;
     }
+
+    public String getConfirmedStr() {
+        return this.confirmed == null ? null : this.confirmed ? "已确认结束(乘客确认，或系统自动确认)" : "未确认";
+    }
 }

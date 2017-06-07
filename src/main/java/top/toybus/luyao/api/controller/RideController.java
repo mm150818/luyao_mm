@@ -117,6 +117,16 @@ public class RideController {
     }
 
     /**
+     * 行程取消
+     */
+    @LoginRequired
+    @RequestMapping("/cancel")
+    public ResData cancel(RideForm rideForm) {
+        ResData resData = rideService.cancel(rideForm);
+        return resData;
+    }
+
+    /**
      * 行程结束
      */
     @LoginRequired

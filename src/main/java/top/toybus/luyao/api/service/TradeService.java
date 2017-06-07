@@ -14,16 +14,19 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
+import top.toybus.luyao.api.entity.Balance;
 import top.toybus.luyao.api.entity.Payment;
 import top.toybus.luyao.api.entity.RideVia;
 import top.toybus.luyao.api.entity.User;
 import top.toybus.luyao.api.entity.UserRide;
 import top.toybus.luyao.api.formbean.TradeForm;
+import top.toybus.luyao.api.repository.BalanceRepository;
 import top.toybus.luyao.api.repository.PaymentRepository;
 import top.toybus.luyao.api.repository.UserRideRepository;
 import top.toybus.luyao.common.bean.ResData;
 import top.toybus.luyao.common.helper.SmsHelper;
 import top.toybus.luyao.common.helper.TradeHelper;
+import top.toybus.luyao.common.util.FormatUtils;
 
 @Service
 @Transactional
@@ -32,6 +35,8 @@ public class TradeService {
     private UserRideRepository userRideRepository;
     @Autowired
     private PaymentRepository paymentRepository;
+    @Autowired
+    private BalanceRepository balanceRepository;
     @Autowired
     private TradeHelper tradeHelper;
     @Autowired
@@ -54,7 +59,7 @@ public class TradeService {
      */
     private boolean verifyAliData(Payment pay, String outTradeNo, String totalAmount, String sellerId, String appId) {
         return pay != null && pay.getOrderNo().toString().equals(outTradeNo)
-                && pay.getTotalAmount().toString().equals(totalAmount)
+                && FormatUtils.moneyCent2Yuan(pay.getTotalAmount()).equals(totalAmount)
                 && tradeHelper.getTradeProps().getALI_SELLER_ID().equals(sellerId)
                 && tradeHelper.getTradeProps().getALI_APP_ID().equals(appId);
     }
@@ -100,15 +105,28 @@ public class TradeService {
                         payment.setStatus(1);
 
                         Integer type = payment.getType();
+
+                        Balance balance = new Balance(); // 收支明细
+                        balance.setCreateTime(LocalDateTime.now());
+                        balance.setMoney(payment.getTotalAmount());
+                        balance.setPaymentId(payment.getId());
+                        balance.setUserId(payment.getUserId());
+                        balance.setWay(payment.getWay());
+
                         if (type == 1) { // 行程订单
+                            balance.setType(4); // 行程支出
+
                             UserRide userRide = userRideRepository.findByPayment(payment);
                             sendOrderOkSms(tradeForm, userRide);
+                        } else if (type == 2) { // 充值
+                            balance.setType(1);
                         }
+
+                        balanceRepository.save(balance);
                     }
                 } else {
                     if (payment.getStatus() == 0) {
                         payment.setStatus(3);
-
                     }
                 }
                 return "success";
@@ -172,46 +190,6 @@ public class TradeService {
     }
 
     /**
-     * 统一下单
-     */
-    /*public ResData unifiedOrder(TradeForm tradeForm) {
-        ResData resData = this.checkOrderNoAndWay(tradeForm);
-        if (!resData.isOk()) {
-            return resData;
-        }
-        Long orderNo = tradeForm.getOrderNo();
-        UserRide userRide = userRideRepository.findByOrderNo(orderNo);
-        if (userRide == null) {
-            return resData.setCode(1).setMsg("该订单不存在"); // err1
-        }
-        Long totalAmount = userRide.getRide().getReward();
-        Integer way = tradeForm.getWay();
-        String body = "马洲路遥-预定行程";
-        if (way == 1) {
-            String result = tradeHelper.aliAppPay(orderNo.toString(), body, String.format("%.2f", totalAmount / 100.0));
-            resData.put("orderStr", result);
-        } else if (way == 2) {
-            Map<String, Object> resultMap = tradeHelper.wxUnifiedorder(orderNo.toString(), body,
-                    totalAmount.toString());
-            resData.putAll(resultMap);
-        }
-    
-        // 保存对账单
-        Payment pay = new Payment();
-        pay.setType(1);
-        pay.setTargetId(userRide.getId());
-        pay.setOutTradeNo(orderNo);
-        pay.setTotalAmount(totalAmount);
-        pay.setWay(tradeForm.getWay()); // 1支付宝支付,2微信支付
-        pay.setCreateTime(LocalDateTime.now());
-        paymentRepository.save(pay);
-    
-        userRide.setStatus(2); // 订单状态：处理中
-    
-        return resData;
-    }*/
-
-    /**
      * 查询订单
      */
     public ResData orderQuery(TradeForm tradeForm) {
@@ -226,6 +204,7 @@ public class TradeService {
         }
         Integer way = payment.getWay();
         Map<String, Object> resultMap = tradeHelper.orderQuery(way, orderNo);
+        resData.put("payment", payment);
         resData.putAll(resultMap);
         return resData;
     }

@@ -63,4 +63,6 @@ public class UserForm extends BaseForm {
     private Long money;
 
     private Integer way;
+
+    private String account;
 }

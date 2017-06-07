@@ -12,8 +12,6 @@ import javax.persistence.Table;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 import lombok.Data;
 
@@ -36,7 +34,6 @@ public class Balance implements Serializable {
     @JsonIgnore
     private Long paymentId;
 
-    @JsonInclude(Include.NON_NULL)
     private Integer way;
 
     private Long money;
@@ -58,5 +55,12 @@ public class Balance implements Serializable {
 
     public String getTypeStr() {
         return typeMap.get(this.type);
+    }
+
+    public String getWayStr() {
+        if (way == null) {
+            return "";
+        }
+        return way == 1 ? "支付宝" : way == 2 ? "微信" : null;
     }
 }

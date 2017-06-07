@@ -28,6 +28,8 @@ public class Payment implements Serializable {
     @GeneratedValue
     private Long id;
 
+    private Long userId;
+
     private Integer type;
 
     private Integer way;
@@ -50,14 +52,34 @@ public class Payment implements Serializable {
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public static final Map<Integer, String> statusMap = new HashMap() {
         {
-            put(0, "未支付");
+            put(0, "未支付(已创建)");
             put(1, "已支付");
-            put(2, "已取消");
-            put(3, "已关闭");
+            put(2, "(用户)已取消");
+            put(3, "已关闭/支付失败");
         }
     };
 
     public String getStatusStr() {
         return statusMap.get(this.status);
+    }
+
+    public String getWayStr() {
+        if (way == null) {
+            return "";
+        }
+        return way == 1 ? "支付宝" : way == 2 ? "微信" : null;
+    }
+
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    public static final Map<Integer, String> typeMap = new HashMap() {
+        {
+            put(1, "行程");
+            put(2, "充值");
+            put(3, "提现");
+        }
+    };
+
+    public String getTypeStr() {
+        return typeMap.get(this.type);
     }
 }
