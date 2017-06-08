@@ -39,14 +39,20 @@ public class RideUser implements Serializable {
     private User user;
 
     private Integer seats;
-    
+
     @ManyToOne
     @JoinColumn(name = "ride_via_id")
     private RideVia rideVia;
+
+    private Boolean canceled;
 
     @JsonIgnore
     private LocalDateTime createTime;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date updateTime;
+
+    public String getCanceledStr() {
+        return this.canceled == null ? null : this.canceled ? "已取消" : "未取消";
+    }
 }

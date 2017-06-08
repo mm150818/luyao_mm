@@ -29,9 +29,9 @@ public interface RideRepository extends BaseRepository<Ride, Long> {
     long countByOwnerAndTime(User owner, LocalDateTime time);
 
     /**
-     * 查询指定ID的行程模板是否存在
+     * 查询指定ID的行程模板是否属于指定用户
      */
-    boolean existsByTemplateTrueAndId(Long id);
+    boolean existsByTemplateTrueAndIdAndOwner(Long id, User owner);
 
     Ride findOneByIdAndOwner(Long id, User loginUser);
 

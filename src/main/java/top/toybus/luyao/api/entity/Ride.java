@@ -15,6 +15,8 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
+import org.hibernate.annotations.Where;
+
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -71,6 +73,7 @@ public class Ride implements Serializable {
     @JsonInclude(Include.NON_NULL)
     @OneToMany
     @JoinColumn(name = "ride_id", updatable = false)
+    @Where(clause = "canceled = false")
     private List<RideUser> rideUserList = new ArrayList<>(0);
 
     public List<RideUser> getRideUserList() {

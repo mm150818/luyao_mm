@@ -48,14 +48,23 @@ public class Vehicle implements Serializable {
     private LocalDateTime updateTime;
 
     public String getTravelImg() {
+        if (this.travelImg == null) {
+            return null;
+        }
         return FileProperties.BASE_URL + this.travelImg;
     }
 
     public String getDrivingImg() {
+        if (this.drivingImg == null) {
+            return null;
+        }
         return FileProperties.BASE_URL + this.drivingImg;
     }
 
     public String getImg() {
+        if (this.img == null) {
+            return null;
+        }
         return FileProperties.BASE_URL + this.img;
     }
 

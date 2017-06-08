@@ -52,6 +52,8 @@ public class UserRide implements Serializable {
 
     private Boolean confirmed;
 
+    private Boolean canceled;
+
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createTime;
 
@@ -68,5 +70,9 @@ public class UserRide implements Serializable {
 
     public String getConfirmedStr() {
         return this.confirmed == null ? null : this.confirmed ? "已确认结束(乘客确认，或系统自动确认)" : "未确认";
+    }
+
+    public String getCanceledStr() {
+        return this.canceled == null ? null : this.canceled ? "已取消" : "未取消";
     }
 }

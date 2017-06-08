@@ -5,6 +5,9 @@ import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -14,7 +17,10 @@ import javax.persistence.criteria.Root;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -46,7 +52,7 @@ import top.toybus.luyao.common.util.ValidatorUtils;
 
 @Service
 @Transactional
-public class RideService {
+public class RideService implements ApplicationContextAware {
     @Autowired
     private RideRepository rideRepository;
     @Autowired
@@ -63,6 +69,13 @@ public class RideService {
     private SmsHelper smsHelper;
     @Autowired
     private TradeHelper tradeHelper;
+
+    private static ApplicationContext applicationContext;
+
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        RideService.applicationContext = applicationContext;
+    }
 
     /**
      * 发布车信息
@@ -238,6 +251,9 @@ public class RideService {
             resData.setCode(ResData.C_PARAM_ERROR).setMsg("请输入行程ID");
         } else {
             Ride ride = rideRepository.findOne(rideForm.getId());
+            if (ride == null) {
+                return resData.setCode(1).setMsg("该行程不存在");
+            }
             User owner = ride.getOwner();
             Vehicle vehicle = vehicleRepository.findOne(owner.getId());
             owner.setVehicle(vehicle);
@@ -564,7 +580,12 @@ public class RideService {
         if (ride == null) {
             return resData.setCode(1).setMsg("预定的行程不存在"); // err1
         }
-        RideVia rideVia = rideViaRepository.findOne(rideForm.getRideViaId());
+        Optional<RideVia> optionalRideVia = ride.getRideViaList().stream()
+                .filter(rideVia -> rideVia.getId() == rideForm.getRideViaId()).findFirst();
+        RideVia rideVia = null;
+        if (optionalRideVia.isPresent()) {
+            rideVia = optionalRideVia.get();
+        }
         if (rideVia == null) {
             return resData.setCode(2).setMsg("途经地点不存在"); // err2
         }
@@ -572,13 +593,39 @@ public class RideService {
         // 最后一个订单
         UserRide userRide = userRideRepository.findFirstByUserIdAndRideOrderByIdDesc(loginUser.getId(), ride);
         if (userRide != null && userRide.getPayment().getStatus() == 0) { // 有已创建的订单
-            Payment payment = userRide.getPayment();
+            final Payment payment = userRide.getPayment();
 //            resData.put("userRide", userRide);
             Map<String, Object> orderMap = tradeHelper.unifiedOrder(payment.getWay(), payment.getOrderNo(), "马洲路遥-行程支付",
                     payment.getTotalAmount());
             resData.put("payment", payment);
             resData.putAll(orderMap);
-            return resData.setCode(3).setMsg("您有一个行程订单未支付"); // err3
+
+            // 超时5分钟自动关闭
+            Executors.newScheduledThreadPool(1).schedule(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        System.out.println("rundddddd");
+                        System.out.println("rundddddd");
+                        RideService rideService = applicationContext.getBean(RideService.class);
+                        Payment payment1 = rideService.paymentRepository.findByOrderNo(payment.getOrderNo());
+                        System.out.println("payment1.status" + payment1.getStatusStr());
+                        if (payment1.getStatus() == 0) { // 0已创建(未支付)
+                            System.out.println("rundddddd");
+                            payment1.setStatus(2);
+//                        payRepository.save(payment1);
+
+//                        UserRide userRide = payRepository.findByPayment(payment1);
+//                        userRide.setCanceled(true);
+//                        userRideRepository.save(userRide);
+                        }
+                    } catch (BeansException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }, 5, TimeUnit.SECONDS); //
+
+            return resData.setCode(0).setMsg("当前行程下您有一个订单未支付"); // err3
         }
         if (ride.getRemainSeats() < rideForm.getSeats()) {
             return resData.setCode(4).setMsg(String.format("所选行程目前还剩余%d个座位", ride.getRemainSeats())); // err4
@@ -595,6 +642,7 @@ public class RideService {
         userRide.setSeats(rideForm.getSeats());
         userRide.setRideVia(rideVia);
         userRide.setConfirmed(false);
+        userRide.setCanceled(false);
         userRide.setCreateTime(LocalDateTime.now());
         userRide.setUpdateTime(LocalDateTime.now());
 
@@ -619,10 +667,41 @@ public class RideService {
         ride.setUpdateTime(LocalDateTime.now());
 
         Map<String, Object> orderMap = tradeHelper.unifiedOrder(way, orderNo, "马洲路遥-行程支付", totalAmount);
+        // 超时5分钟自动关闭
+        Executors.newScheduledThreadPool(0).schedule(new Runnable() {
+            @Override
+            public void run() {
+                Payment payment = paymentRepository.findByOrderNo(orderNo);
+                if (payment.getStatus() == 0) { // 0已创建(未支付)
+                    payment.setStatus(2);
+                    paymentRepository.save(payment);
+
+                    UserRide userRide = userRideRepository.findByPayment(payment);
+                    userRide.setCanceled(true);
+                    userRideRepository.save(userRide);
+                }
+            }
+        }, 5, TimeUnit.SECONDS); //
 
         resData.put("payment", payment);
         resData.putAll(orderMap);
         return resData;
+    }
+
+    /**
+     * 自动超时支付关闭
+     */
+    @Transactional
+    public void timeoutCancelOrder(Long orderNo) {
+        Payment payment = paymentRepository.findByOrderNo(orderNo);
+        if (payment.getStatus() == 0) { // 0已创建(未支付)
+            payment.setStatus(2);
+            paymentRepository.save(payment);
+
+            UserRide userRide = userRideRepository.findByPayment(payment);
+            userRide.setCanceled(true);
+            userRideRepository.save(userRide);
+        }
     }
 
     /**
@@ -679,7 +758,7 @@ public class RideService {
         if (payment == null) {
             return resData.setCode(1).setMsg("该行程订单不存在"); // err1
         }
-        Integer status = payment.getStatus(); // 状态，0已创建(未支付)，1已支付，2用户已取消，3已关闭/支付失败
+        Integer status = payment.getStatus(); // 状态，0已创建(未支付)，1已支付，2用户已取消，3已关闭/支付失败，4已退款
         if (status == 2) {
             return resData.setCode(2).setMsg("该行程订单已取消"); // err2
         }
@@ -688,6 +767,7 @@ public class RideService {
             return resData.setCode(3).setMsg("该行程已结束"); // err3
         }
         payment.setStatus(2);
+        userRide.setCanceled(true);
 
         Integer way = payment.getWay();
         Ride ride = userRide.getRide();

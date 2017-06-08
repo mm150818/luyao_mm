@@ -92,9 +92,13 @@ public class UserService {
                 } else {
                     User newUser = new User();
                     newUser.setMobile(userForm.getMobile());
-                    newUser.setToken("");
+                    newUser.setToken(UUIDUtils.randUUID());
                     newUser.setPassword(DigestUtils.md5Hex(userForm.getPassword()));
+                    newUser.setNickname(StringUtils.substring(userForm.getMobile(), -4));
+                    newUser.setHeadImg("img/default/user_head_img.jpg");
                     newUser.setBalance(0L);
+                    newUser.setIncome(0L);
+                    newUser.setDrawCash(0L);
                     newUser.setRideCount(0);
                     newUser.setStatus(0);
                     newUser.setCreateTime(LocalDateTime.now());
@@ -174,8 +178,8 @@ public class UserService {
             } else if (!user.getPassword().equals(DigestUtils.md5Hex(userForm.getPassword()))) {
                 resData.setCode(2).setMsg("密码输入错误"); // err2
             } else {
-                if (user.getStatus() == 1) { // er3
-                    resData.setCode(3).setMsg("用户已经登录");
+                if (user.getStatus() == 1) { // err0
+                    // resData.setCode(0).setMsg("用户已经登录");
                 } else { // 更新用户状态为已登录
                     user.setToken(UUIDUtils.randUUID()); // 产生新的令牌
                     user.setStatus(1); // 已登录
@@ -388,7 +392,7 @@ public class UserService {
             return resData.setCode(ResData.C_PARAM_ERROR).setMsg("请输入车辆图片");
         }
         if (userForm.getRideTemplateId() != null) {
-            if (rideRepository.existsByTemplateTrueAndId(userForm.getRideTemplateId())) {
+            if (rideRepository.existsByTemplateTrueAndIdAndOwner(userForm.getRideTemplateId(), loginUser)) {
                 vehicle.setRideTemplateId(userForm.getRideTemplateId());
             } else {
                 return resData.setCode(1).setMsg("行程模板不存在"); // err1

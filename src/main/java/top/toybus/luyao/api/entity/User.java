@@ -89,6 +89,9 @@ public class User implements Serializable {
     }
 
     public String getHeadImg() {
+        if (this.headImg == null) {
+            return null;
+        }
         return FileProperties.BASE_URL + this.headImg;
     }
 
