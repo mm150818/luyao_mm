@@ -25,5 +25,6 @@ public class SmsProperties {
     private String tplRideUpdOk; // 5.您成功调整了发布的信息（当用户修改尚未有人预约的班次时收到的提醒）
     private String tplDepositOk; // 6.您成功提现200元到支付宝、微信账户（用户提现成功的时候）
     private String tplEncashOk; // 7.充值成功，您的账户余额200元（当用户自己选择冲值的时候）
+    private String tplOwnerOk; // 8.您已经通过车主认证，赶紧去发布信息吧
 
 }

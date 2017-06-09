@@ -6,8 +6,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -17,15 +15,11 @@ import javax.persistence.criteria.Root;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -52,7 +46,7 @@ import top.toybus.luyao.common.util.ValidatorUtils;
 
 @Service
 @Transactional
-public class RideService implements ApplicationContextAware {
+public class RideService {
     @Autowired
     private RideRepository rideRepository;
     @Autowired
@@ -69,13 +63,6 @@ public class RideService implements ApplicationContextAware {
     private SmsHelper smsHelper;
     @Autowired
     private TradeHelper tradeHelper;
-
-    private static ApplicationContext applicationContext;
-
-    @Override
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-        RideService.applicationContext = applicationContext;
-    }
 
     /**
      * 发布车信息
@@ -197,7 +184,7 @@ public class RideService implements ApplicationContextAware {
             return resData.setCode(ResData.C_PARAM_ERROR).setMsg("目的地格式不正确");
         }
         Pageable pageable = PageUtils.toPageRequest(rideForm);
-//        Page<Ride> pageRide = rideRepository.findAllByTemplateFalse(pageRequest);
+        // Page<Ride> pageRide = rideRepository.findAllByTemplateFalse(pageRequest);
         Page<Ride> pageRide = rideRepository.findAll(toSpecification(rideForm), pageable);
         pageRide.forEach(ride -> {
             User owner = ride.getOwner();
@@ -593,39 +580,13 @@ public class RideService implements ApplicationContextAware {
         // 最后一个订单
         UserRide userRide = userRideRepository.findFirstByUserIdAndRideOrderByIdDesc(loginUser.getId(), ride);
         if (userRide != null && userRide.getPayment().getStatus() == 0) { // 有已创建的订单
-            final Payment payment = userRide.getPayment();
-//            resData.put("userRide", userRide);
+            Payment payment = userRide.getPayment();
+            // resData.put("userRide", userRide);
             Map<String, Object> orderMap = tradeHelper.unifiedOrder(payment.getWay(), payment.getOrderNo(), "马洲路遥-行程支付",
                     payment.getTotalAmount());
             resData.put("payment", payment);
             resData.putAll(orderMap);
-
-            // 超时5分钟自动关闭
-            Executors.newScheduledThreadPool(1).schedule(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        System.out.println("rundddddd");
-                        System.out.println("rundddddd");
-                        RideService rideService = applicationContext.getBean(RideService.class);
-                        Payment payment1 = rideService.paymentRepository.findByOrderNo(payment.getOrderNo());
-                        System.out.println("payment1.status" + payment1.getStatusStr());
-                        if (payment1.getStatus() == 0) { // 0已创建(未支付)
-                            System.out.println("rundddddd");
-                            payment1.setStatus(2);
-//                        payRepository.save(payment1);
-
-//                        UserRide userRide = payRepository.findByPayment(payment1);
-//                        userRide.setCanceled(true);
-//                        userRideRepository.save(userRide);
-                        }
-                    } catch (BeansException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }, 5, TimeUnit.SECONDS); //
-
-            return resData.setCode(0).setMsg("当前行程下您有一个订单未支付"); // err3
+            return resData.setCode(3).setMsg("当前行程下您有一个订单未支付"); // err3
         }
         if (ride.getRemainSeats() < rideForm.getSeats()) {
             return resData.setCode(4).setMsg(String.format("所选行程目前还剩余%d个座位", ride.getRemainSeats())); // err4
@@ -667,21 +628,6 @@ public class RideService implements ApplicationContextAware {
         ride.setUpdateTime(LocalDateTime.now());
 
         Map<String, Object> orderMap = tradeHelper.unifiedOrder(way, orderNo, "马洲路遥-行程支付", totalAmount);
-        // 超时5分钟自动关闭
-        Executors.newScheduledThreadPool(0).schedule(new Runnable() {
-            @Override
-            public void run() {
-                Payment payment = paymentRepository.findByOrderNo(orderNo);
-                if (payment.getStatus() == 0) { // 0已创建(未支付)
-                    payment.setStatus(2);
-                    paymentRepository.save(payment);
-
-                    UserRide userRide = userRideRepository.findByPayment(payment);
-                    userRide.setCanceled(true);
-                    userRideRepository.save(userRide);
-                }
-            }
-        }, 5, TimeUnit.SECONDS); //
 
         resData.put("payment", payment);
         resData.putAll(orderMap);
@@ -691,16 +637,21 @@ public class RideService implements ApplicationContextAware {
     /**
      * 自动超时支付关闭
      */
-    @Transactional
     public void timeoutCancelOrder(Long orderNo) {
         Payment payment = paymentRepository.findByOrderNo(orderNo);
         if (payment.getStatus() == 0) { // 0已创建(未支付)
-            payment.setStatus(2);
-            paymentRepository.save(payment);
+            payment.setStatus(2); // 用户(超时)已取消
+            // paymentRepository.save(payment);
 
             UserRide userRide = userRideRepository.findByPayment(payment);
-            userRide.setCanceled(true);
-            userRideRepository.save(userRide);
+            userRide.setCanceled(true); // 订单取消
+            // userRideRepository.save(userRide);
+
+            Ride ride = userRide.getRide(); // 行程座位解锁
+            ride.setRemainSeats(ride.getRemainSeats() + userRide.getSeats());
+
+            // 关闭支付
+            tradeHelper.closeOrder(payment.getWay(), orderNo);
         }
     }
 
@@ -785,10 +736,9 @@ public class RideService implements ApplicationContextAware {
     }
 
     /**
-     * 每天00:01:00秒执行
+     * 行程自动结束
      */
-//    @Scheduled(initialDelay = 0, fixedDelay = Integer.MAX_VALUE)
-    @Scheduled(cron = "0 1 0 * * ?")
+    // @Async
     public void autoFinish() {
         Pageable pageable = new PageRequest(0, 10);
         // 查询所有已经支付了的但是乘客未确认的行程订单

@@ -1,10 +1,18 @@
 package top.toybus.luyao.api.controller;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import top.toybus.luyao.api.annotation.LoginRequired;
+import top.toybus.luyao.api.entity.Payment;
 import top.toybus.luyao.api.formbean.RideForm;
 import top.toybus.luyao.api.service.RideService;
 import top.toybus.luyao.common.bean.ResData;
@@ -113,6 +121,21 @@ public class RideController {
     @RequestMapping("/order")
     public ResData order(RideForm rideForm) {
         ResData resData = rideService.order(rideForm);
+        Payment payment = (Payment) resData.getData().get("payment");
+        if (resData.getCode() == 0) { // 第一次下单成功
+            Executors.newSingleThreadScheduledExecutor().schedule(new Runnable() {
+                @Override
+                public void run() {
+                    rideService.timeoutCancelOrder(payment.getOrderNo());
+                }
+            }, 5, TimeUnit.MINUTES);
+        } else if (resData.getCode() == 3) { // 有未支付的订单，按正常请求处理
+            long millis = Duration.of(5, ChronoUnit.MINUTES).toMillis()
+                    - Duration.between(payment.getCreateTime(), LocalDateTime.now()).toMillis();
+            if (millis > 0) {
+                resData.setCode(0).put("remainPayMillis", millis);
+            }
+        }
         return resData;
     }
 
@@ -134,6 +157,16 @@ public class RideController {
     public ResData finish(RideForm rideForm) {
         ResData resData = rideService.finish(rideForm);
         return resData;
+    }
+
+    /**
+     * 每天00:01:00秒执行
+     * 行程自动结束
+     */
+    // @Scheduled(initialDelay = 0, fixedDelay = Integer.MAX_VALUE)
+    @Scheduled(cron = "0 1 0 * * ?")
+    public void scheduledFinish() {
+        rideService.autoFinish();
     }
 
 }
