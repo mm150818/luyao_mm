@@ -717,6 +717,10 @@ public class RideService {
         if (userRide.getConfirmed()) {
             return resData.setCode(3).setMsg("该行程已结束"); // err3
         }
+        if (status == 1) {
+            // 暂时不支持退款
+            return resData.setCode(3).setMsg("抱歉，暂时不支持退单！"); // err3
+        }
         payment.setStatus(2);
         userRide.setCanceled(true);
 
