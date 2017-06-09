@@ -87,12 +87,22 @@ public class UserController {
     }
 
     /**
-     * 用户订单列表
+     * 用户乘客订单列表
      */
     @LoginRequired
     @RequestMapping("/orderList")
     public ResData orderList(RideForm rideForm) {
         ResData resData = userService.orderList(rideForm);
+        return resData;
+    }
+
+    /**
+     * 用户司机订单列表
+     */
+    @LoginRequired
+    @RequestMapping("/rideList")
+    public ResData rideList(RideForm rideForm) {
+        ResData resData = userService.rideList(rideForm);
         return resData;
     }
 

@@ -42,7 +42,7 @@ public class Ride implements Serializable {
 
     @JsonIgnoreProperties({ "owner", "balance", "status" })
     @ManyToOne
-    @JoinColumn(name = "owner_id")
+    @JoinColumn(name = "owner_id", updatable = false)
     private User owner;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")

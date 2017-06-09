@@ -186,7 +186,7 @@ public class UserService {
                     user.setUpdateTime(LocalDateTime.now());
                 }
                 if (user.getOwner() != null) { // 如果是车主
-                    Vehicle vehicle = vehicleRepository.findOne(user.getId());
+                    Vehicle vehicle = vehicleRepository.findOne(user.getVehicleId());
                     user.setVehicle(vehicle);
                 }
 
@@ -431,22 +431,72 @@ public class UserService {
     }
 
     /**
-     * 用户订单列表
+     * 乘客订单列表
      */
     public ResData orderList(RideForm rideForm) {
         ResData resData = ResData.get();
         Pageable pageable = PageUtils.toPageRequest(rideForm);
-//        Page<UserRide> pageUserRide = userRideRepository.findListByUserIdOrderByIdDesc(loginUser.getId(), pageable);
-        Page<UserRide> pageUserRide = userRideRepository.findAll(toSpecification(rideForm), pageable);
+        Page<UserRide> pageUserRide = userRideRepository.findAll(toUserRideSpecification(rideForm), pageable);
         pageUserRide.getContent().forEach(userRide -> userRide.getRide().setRideUserList(null));
         resData.putAll(PageUtils.toMap("userRideList", pageUserRide));
         return resData;
     }
 
     /**
+     * 司机行程列表
+     */
+    public ResData rideList(RideForm rideForm) {
+        ResData resData = ResData.get();
+        Pageable pageable = PageUtils.toPageRequest(rideForm);
+        Page<Ride> pageRide = rideRepository.findAll(toRideSpecification(rideForm), pageable);
+        resData.putAll(PageUtils.toMap("rideList", pageRide));
+        return resData;
+    }
+
+    /**
      * 构建行程列表查询条件
      */
-    private Specification<UserRide> toSpecification(final RideForm rideForm) {
+    private Specification<Ride> toRideSpecification(final RideForm rideForm) {
+        return new Specification<Ride>() {
+            @Override
+            public Predicate toPredicate(Root<Ride> root, CriteriaQuery<?> query, CriteriaBuilder cb) {
+                Predicate predicate = cb.conjunction();
+                List<Expression<Boolean>> expressions = predicate.getExpressions();
+                // join fetch
+                root.fetch(root.getModel().getList("rideViaList"), JoinType.LEFT);
+
+                // 不是模板
+                expressions.add(cb.equal(root.get("template").as(Boolean.class), false));
+                // 指定乘客
+                expressions.add(cb.equal(root.get("owner").as(User.class), rideForm.getLoginUser()));
+                // 时间
+                if (rideForm.getTime() != null) {
+                    expressions
+                            .add(cb.greaterThanOrEqualTo(root.get("time").as(LocalDateTime.class), rideForm.getTime()));
+                    expressions
+                            .add(cb.lessThan(root.get("time").as(LocalDateTime.class), rideForm.getTime().plusDays(1)));
+                }
+                // 出发地
+                if (StringUtils.isNotBlank(rideForm.getStartPoint())) {
+                    expressions.add(
+                            cb.like(root.get("startPoint").as(String.class), "%" + rideForm.getStartPoint() + "%"));
+                }
+                // 目的地
+                if (StringUtils.isNotBlank(rideForm.getEndPoint())) {
+                    expressions.add(cb.like(root.get("endPoint").as(String.class), "%" + rideForm.getEndPoint() + "%"));
+                }
+                // id desc
+                query.orderBy(cb.desc(root.get("time").as(LocalDateTime.class)));
+
+                return predicate;
+            }
+        };
+    }
+
+    /**
+     * 构建行程列表查询条件
+     */
+    private Specification<UserRide> toUserRideSpecification(final RideForm rideForm) {
         return new Specification<UserRide>() {
             @Override
             public Predicate toPredicate(Root<UserRide> root, CriteriaQuery<?> query, CriteriaBuilder cb) {

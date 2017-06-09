@@ -201,7 +201,7 @@ public class RideService implements ApplicationContextAware {
         Page<Ride> pageRide = rideRepository.findAll(toSpecification(rideForm), pageable);
         pageRide.forEach(ride -> {
             User owner = ride.getOwner();
-            owner.setVehicle(vehicleRepository.findOne(owner.getId()));
+            owner.setVehicle(vehicleRepository.findOne(owner.getVehicleId()));
         });
         resData.putAll(PageUtils.toMap("rideList", pageRide));
         return resData;
@@ -255,7 +255,7 @@ public class RideService implements ApplicationContextAware {
                 return resData.setCode(1).setMsg("该行程不存在");
             }
             User owner = ride.getOwner();
-            Vehicle vehicle = vehicleRepository.findOne(owner.getId());
+            Vehicle vehicle = vehicleRepository.findOne(owner.getVehicleId());
             owner.setVehicle(vehicle);
             resData.put("ride", ride);
         }
