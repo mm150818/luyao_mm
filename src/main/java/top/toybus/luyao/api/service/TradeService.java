@@ -22,6 +22,7 @@ import top.toybus.luyao.api.entity.UserRide;
 import top.toybus.luyao.api.formbean.TradeForm;
 import top.toybus.luyao.api.repository.BalanceRepository;
 import top.toybus.luyao.api.repository.PaymentRepository;
+import top.toybus.luyao.api.repository.UserRepository;
 import top.toybus.luyao.api.repository.UserRideRepository;
 import top.toybus.luyao.common.bean.ResData;
 import top.toybus.luyao.common.helper.SmsHelper;
@@ -33,6 +34,8 @@ import top.toybus.luyao.common.util.FormatUtils;
 public class TradeService {
     @Autowired
     private UserRideRepository userRideRepository;
+    @Autowired
+    private UserRepository userRepository;
     @Autowired
     private PaymentRepository paymentRepository;
     @Autowired
@@ -67,21 +70,20 @@ public class TradeService {
     /**
      * 发送订购成功短信
      */
-    private void sendOrderOkSms(TradeForm tradeForm, UserRide userRide) {
+    private void sendOrderOkSms(User user, UserRide userRide) {
         // 5月12日19点30分中潭路4号口不见不散（当用户预约并支付成功时收到的提醒）
-        User loginUser = tradeForm.getLoginUser();
         Map<String, String> paramMap = new HashMap<>();
         RideVia rideVia = userRide.getRideVia();
         paramMap.put("name", String.format("[%s]", userRide.getRide().getStartEndPoint()));
         paramMap.put("time", rideVia.getTime().format(DateTimeFormatter.ofPattern("M月d日HH点mm分")));
         paramMap.put("address", rideVia.getPoint());
-        smsHelper.sendSms(loginUser.getMobile(), smsHelper.getSmsProperties().getTplOrderOk(), paramMap);
+        smsHelper.sendSms(user.getMobile(), smsHelper.getSmsProperties().getTplOrderOk(), paramMap);
     }
 
     /**
      * 支付宝异步通知
      */
-    public String aliAsyncNotify(TradeForm tradeForm) {
+    public String aliAsyncNotify() {
         ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder
                 .getRequestAttributes();
         HttpServletRequest request = requestAttributes.getRequest();
@@ -117,7 +119,8 @@ public class TradeService {
                             balance.setType(4); // 行程支出
 
                             UserRide userRide = userRideRepository.findByPayment(payment);
-                            sendOrderOkSms(tradeForm, userRide);
+                            User user = userRepository.findOne(userRide.getUserId());
+                            sendOrderOkSms(user, userRide);
                         } else if (type == 2) { // 充值
                             balance.setType(1);
                         }
@@ -138,7 +141,7 @@ public class TradeService {
     /**
      * 微信异步通知处理
      */
-    public String wxAsyncNotify(TradeForm tradeForm) {
+    public String wxAsyncNotify() {
         Map<String, Object> returnMap = new HashMap<>();
         Map<String, Object> paramsMap = tradeHelper.getWxReqParamsMap();
         boolean signVerified = tradeHelper.verifyWxSign(paramsMap);
@@ -162,7 +165,8 @@ public class TradeService {
                         Integer type = payment.getType();
                         if (type == 1) { // 行程订单
                             UserRide userRide = userRideRepository.findByPayment(payment);
-                            sendOrderOkSms(tradeForm, userRide);
+                            User user = userRepository.findOne(userRide.getUserId());
+                            sendOrderOkSms(user, userRide);
                         }
                     }
                 } else {

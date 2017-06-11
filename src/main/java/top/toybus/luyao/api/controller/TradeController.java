@@ -24,16 +24,16 @@ public class TradeController {
      * 阿里异步通知
      */
     @RequestMapping("/ali/asyncNotify")
-    public String aliAsyncNotify(TradeForm tradeForm) {
-        return tradeService.aliAsyncNotify(tradeForm);
+    public String aliAsyncNotify() {
+        return tradeService.aliAsyncNotify();
     }
 
     /**
      * 微信异步通知
      */
     @RequestMapping("/wx/asyncNotify")
-    public String wxAsyncNotify(TradeForm tradeForm) {
-        return tradeService.wxAsyncNotify(tradeForm);
+    public String wxAsyncNotify() {
+        return tradeService.wxAsyncNotify();
     }
 
     /**

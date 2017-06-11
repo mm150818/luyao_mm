@@ -97,7 +97,7 @@ public class TradeHelper {
         }
         // 切记alipaypublickey是支付宝的公钥，请去open.alipay.com对应应用下查看。
         try {
-            return AlipaySignature.rsaCheckV2(params, tradeProps.getALI_ALIPAY_PUBLIC_KEY(),
+            return AlipaySignature.rsaCheckV1(params, tradeProps.getALI_ALIPAY_PUBLIC_KEY(),
                     tradeProps.getALI_CHARSET(), tradeProps.getALI_SIGN_TYPE());
         } catch (AlipayApiException e) {
             log.error(e.getMessage(), e);
