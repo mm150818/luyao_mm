@@ -583,7 +583,7 @@ public class UserService {
         Long orderNo = UUIDUtils.getOrderNo();
         User loginUser = userForm.getLoginUser();
 
-        Map<String, Object> resultMap = tradeHelper.unifiedOrder(way, orderNo, "马洲路遥-充值", money);
+        Map<String, Object> resultMap = tradeHelper.unifiedOrder(way, orderNo, "马洲路遥-充值", money, 5);
 
         Payment payment = new Payment();
         payment.setCreateTime(LocalDateTime.now());

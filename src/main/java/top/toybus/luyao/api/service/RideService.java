@@ -1,7 +1,9 @@
 package top.toybus.luyao.api.service;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -579,15 +581,42 @@ public class RideService {
         User loginUser = rideForm.getLoginUser();
         // 最后一个订单
         UserRide userRide = userRideRepository.findFirstByUserIdAndRideOrderByIdDesc(loginUser.getId(), ride);
-        if (userRide != null && userRide.getPayment().getStatus() == 0) { // 有已创建的订单
+        if (userRide != null && userRide.getPayment().getStatus() == 0) { // 当前行程下有已创建的订单
+            if (userRide.getSeats() + ride.getRemainSeats() < rideForm.getSeats()) {
+                return resData.setCode(4)
+                        .setMsg(String.format("所选行程目前还剩余%d个座位", userRide.getSeats() + ride.getRemainSeats())); // err4
+            }
+            if (rideForm.getWay() == null) {
+                return resData.setCode(ResData.C_PARAM_ERROR).setMsg("请选择支付方式");
+            } else if (rideForm.getWay() != 1 && rideForm.getWay() != 2) {
+                return resData.setCode(ResData.C_PARAM_ERROR).setMsg("支付方式格式不正确");
+            }
+            ride.setRemainSeats(userRide.getSeats() + ride.getRemainSeats() - rideForm.getSeats()); // 修改剩余座位数
+            userRide.setSeats(rideForm.getSeats()); // 修改订单座位数
+            userRide.setUpdateTime(LocalDateTime.now());
+
             Payment payment = userRide.getPayment();
-            // resData.put("userRide", userRide);
+            payment.setWay(rideForm.getWay()); // 修改支付方式
+            payment.setTotalAmount(userRide.getTotalAmount()); // 修改订单总金额
+
+            long millis = Duration.of(5, ChronoUnit.MINUTES).toMillis()
+                    - Duration.between(payment.getCreateTime(), LocalDateTime.now()).toMillis();
+            int mins = (int) (millis / 1000 / 60); // 剩余支付分钟数
+            if (millis < 1) { // 如果剩余支付分钟数为0，则设置为1分钟后超时
+                mins = 1;
+            }
             Map<String, Object> orderMap = tradeHelper.unifiedOrder(payment.getWay(), payment.getOrderNo(), "马洲路遥-行程支付",
-                    payment.getTotalAmount());
+                    payment.getTotalAmount(), mins);
+
+            if (millis > 0) {
+                resData.setCode(0).put("remainPayMillis", millis);
+            }
+            // resData.put("userRide", userRide);
             resData.put("payment", payment);
             resData.putAll(orderMap);
             return resData.setCode(3).setMsg("当前行程下您有一个订单未支付"); // err3
         }
+        // 新建行程订单
         if (ride.getRemainSeats() < rideForm.getSeats()) {
             return resData.setCode(4).setMsg(String.format("所选行程目前还剩余%d个座位", ride.getRemainSeats())); // err4
         }
@@ -627,7 +656,7 @@ public class RideService {
         ride.setRemainSeats(ride.getRemainSeats() - userRide.getSeats()); // 修改剩余座位数
         ride.setUpdateTime(LocalDateTime.now());
 
-        Map<String, Object> orderMap = tradeHelper.unifiedOrder(way, orderNo, "马洲路遥-行程支付", totalAmount);
+        Map<String, Object> orderMap = tradeHelper.unifiedOrder(way, orderNo, "马洲路遥-行程支付", totalAmount, 5);
 
         resData.put("payment", payment);
         resData.putAll(orderMap);

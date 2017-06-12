@@ -1,8 +1,5 @@
 package top.toybus.luyao.api.controller;
 
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
@@ -130,11 +127,7 @@ public class RideController {
                 }
             }, 5, TimeUnit.MINUTES);
         } else if (resData.getCode() == 3) { // 有未支付的订单，按正常请求处理
-            long millis = Duration.of(5, ChronoUnit.MINUTES).toMillis()
-                    - Duration.between(payment.getCreateTime(), LocalDateTime.now()).toMillis();
-            if (millis > 0) {
-                resData.setCode(0).put("remainPayMillis", millis);
-            }
+            resData.setCode(0);
         }
         return resData;
     }

@@ -229,7 +229,8 @@ public class TradeHelper {
     /**
      * 统一下单
      */
-    public Map<String, Object> unifiedOrder(Integer way, Long orderNo, String body, Long totalAmount) {
+    public Map<String, Object> unifiedOrder(Integer way, Long orderNo, String body, Long totalAmount,
+            int timeoutExpressMins) {
         Map<String, Object> resultMap = new HashMap<>();
         if (way == 1) {
             AlipayTradeAppPayRequest request = new AlipayTradeAppPayRequest();
@@ -238,6 +239,7 @@ public class TradeHelper {
             model.setOutTradeNo(orderNo.toString());
             model.setTotalAmount(FormatUtils.moneyCent2Yuan(totalAmount));
             model.setProductCode("QUICK_MSECURITY_PAY");
+            model.setTimeExpire(String.format("%dm", timeoutExpressMins));
             request.setBizModel(model);
             request.setNotifyUrl(tradeProps.getALI_NOTIFY_URL());
 
