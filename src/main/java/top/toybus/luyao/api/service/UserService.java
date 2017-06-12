@@ -449,6 +449,8 @@ public class UserService {
         ResData resData = ResData.get();
         Pageable pageable = PageUtils.toPageRequest(rideForm);
         Page<Ride> pageRide = rideRepository.findAll(toRideSpecification(rideForm), pageable);
+        // 车的信息
+        pageRide.forEach(ride -> ride.getOwner().setVehicle(vehicleRepository.findOne(ride.getOwner().getVehicleId())));
         resData.putAll(PageUtils.toMap("rideList", pageRide));
         return resData;
     }
