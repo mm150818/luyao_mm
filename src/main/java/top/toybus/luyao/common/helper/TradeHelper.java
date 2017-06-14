@@ -239,7 +239,7 @@ public class TradeHelper {
             model.setOutTradeNo(orderNo.toString());
             model.setTotalAmount(FormatUtils.moneyCent2Yuan(totalAmount));
             model.setProductCode("QUICK_MSECURITY_PAY");
-            model.setTimeExpire(String.format("%dm", timeoutExpressMins));
+            model.setTimeoutExpress(String.format("%dm", timeoutExpressMins));
             request.setBizModel(model);
             request.setNotifyUrl(tradeProps.getALI_NOTIFY_URL());
 

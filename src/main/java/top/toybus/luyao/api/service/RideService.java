@@ -602,13 +602,13 @@ public class RideService {
             long millis = Duration.of(5, ChronoUnit.MINUTES).toMillis()
                     - Duration.between(payment.getCreateTime(), LocalDateTime.now()).toMillis();
             int mins = (int) (millis / 1000 / 60); // 剩余支付分钟数
-            if (millis < 1) { // 如果剩余支付分钟数为0，则设置为1分钟后超时
+            if (mins < 1) { // 如果剩余支付分钟数为0，则设置为1分钟后超时
                 mins = 1;
             }
             Map<String, Object> orderMap = tradeHelper.unifiedOrder(payment.getWay(), payment.getOrderNo(), "马洲路遥-行程支付",
                     payment.getTotalAmount(), mins);
 
-            if (millis > 0) {
+            if (millis >= 0) {
                 resData.setCode(0).put("remainPayMillis", millis);
             }
             // resData.put("userRide", userRide);
