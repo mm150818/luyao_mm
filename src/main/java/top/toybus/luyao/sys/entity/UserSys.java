@@ -61,13 +61,14 @@ public class UserSys implements Serializable {
 
     private Integer status;
 
-    private Boolean owner;
+    private Integer owner;
 
-    @JsonIgnore
     private Long vehicleId;
 
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createTime;
 
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime updateTime;
 
     public String getHeadImg() {
@@ -79,15 +80,25 @@ public class UserSys implements Serializable {
 
     @JsonIgnore
     public boolean isNotOwner() {
-        return this.owner == null || !this.owner;
+        return this.owner != 1;
     }
 
     public String getSexStr() {
         return this.sex == null ? "" : this.sex == 1 ? "男" : this.sex == 0 ? "女" : "未知(保密)";
     }
 
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    public static final Map<Integer, String> ownerMap = new HashMap() {
+        {
+            put(0, "不是车主");
+            put(1, "是车主");
+            put(2, "车主审核中");
+            put(3, "车主审核失败");
+        }
+    };
+
     public String getOwnerStr() {
-        return this.owner == null ? "不是车主" : this.owner ? "是车主" : "车主审核中";
+        return ownerMap.get(this.owner);
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })

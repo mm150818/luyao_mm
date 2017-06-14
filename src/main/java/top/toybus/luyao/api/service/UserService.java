@@ -101,6 +101,7 @@ public class UserService {
                     newUser.setDrawCash(0L);
                     newUser.setRideCount(0);
                     newUser.setStatus(0);
+                    newUser.setOwner(0);
                     newUser.setCreateTime(LocalDateTime.now());
                     newUser.setUpdateTime(LocalDateTime.now());
 
@@ -407,7 +408,7 @@ public class UserService {
         vehicle.setUpdateTime(LocalDateTime.now());
         vehicle = vehicleRepository.save(vehicle);
         // 修改车辆信息，重新审核
-        userRepository.updateUserOwnerById(loginUser.getId(), false, vehicle.getId());
+        userRepository.updateUserOwnerById(loginUser.getId(), 2, vehicle.getId());
 
         resData.put("vehicle", vehicle);
         return resData;

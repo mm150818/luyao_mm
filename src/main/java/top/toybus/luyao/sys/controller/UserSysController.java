@@ -18,11 +18,20 @@ public class UserSysController {
     private UserSysService userSysService;
 
     /**
-     * 用户车主认证通过
+     * 用户车主认证
      */
-    @RequestMapping("/verifyOwnerOk")
-    public ResData verifyOwnerOk(UserSysForm userSysForm) {
-        ResData resData = userSysService.verifyOwnerOk(userSysForm);
+    @RequestMapping("/verifyOwner")
+    public ResData verifyOwner(UserSysForm userSysForm) {
+        ResData resData = userSysService.verifyOwner(userSysForm);
+        return resData;
+    }
+
+    /**
+     * 用户列表
+     */
+    @RequestMapping("/list")
+    public ResData list(UserSysForm userSysForm) {
+        ResData resData = userSysService.list(userSysForm);
         return resData;
     }
 

@@ -25,7 +25,7 @@ public interface UserRepository extends BaseRepository<User, Long> {
 
     @Modifying
     @Query("update User u set u.owner = ?2, u.vehicleId = ?3 where u.id = ?1")
-    int updateUserOwnerById(Long id, Boolean owner, Long vehicleId);
+    int updateUserOwnerById(Long id, Integer owner, Long vehicleId);
 
     List<UserBean> findListBy(Pageable pageable);
 
