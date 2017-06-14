@@ -186,7 +186,7 @@ public class UserService {
                     user.setStatus(1); // 已登录
                     user.setUpdateTime(LocalDateTime.now());
                 }
-                if (user.getOwner() != null) { // 如果是车主
+                if (user.getVehicleId() != null) { // 如果是车主
                     Vehicle vehicle = vehicleRepository.findOne(user.getVehicleId());
                     user.setVehicle(vehicle);
                 }
@@ -272,7 +272,7 @@ public class UserService {
     public ResData getUser(UserForm userForm) {
         ResData resData = ResData.get();
         User user = userForm.getLoginUser();
-        if (user.getOwner() != null) { // 如果是车主
+        if (user.getVehicleId() != null) { // 如果是车主
             Vehicle vehicle = vehicleRepository.findOne(user.getVehicleId());
             user.setVehicle(vehicle);
         }
