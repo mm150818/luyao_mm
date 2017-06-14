@@ -145,7 +145,7 @@
      <logger name="logging.level.top.toybus.luyao.common.helper.SmsHelper" level="INFO" />
 	     
 	     <!-- 日志输出级别 级别排序为： TRACE < DEBUG < INFO < WARN < ERROR -->
-	   <root level="INFO">
+	   <root level="ERROR">
 	       <appender-ref ref="STDOUT" />
 	   </root>
 	 </springProfile>
