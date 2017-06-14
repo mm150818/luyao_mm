@@ -21,9 +21,10 @@
     <include resource="org/springframework/boot/logging/logback/base.xml" />
     
     <!-- 测试环境+生产环境.多个使用逗号隔开. -->
-    <springProfile name="test,prod">
+    <springProfile name="test, prod">
         <!--设置日志目录-->
         <property name="LOG_PATH" value="/opt/luyao/logs" />
+<!--         <property name="LOG_PATH" value="/Users/sunxg/eclipse/git/luyao/logs" /> -->
         
         <!-- 日志记录器，日期滚动记录 -->
 		    <appender name="FILEERROR" class="ch.qos.logback.core.rolling.RollingFileAppender">
@@ -44,7 +45,7 @@
 		        <append>true</append>
 		        <!-- 日志文件的格式 -->
 		        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
-		            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level %logger Line:%-3L - %msg%n</pattern>
+		            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %p [%c] - %m%n</pattern>
 		            <charset>utf-8</charset>
 		        </encoder>
 		        <!-- 此日志文件只记录info级别的 -->
@@ -74,7 +75,7 @@
 		        <append>true</append>
 		        <!-- 日志文件的格式 -->
 		        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
-		            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level %logger Line:%-3L - %msg%n</pattern>
+		            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %p [%c] - %m%n</pattern>
 		            <charset>utf-8</charset>
 		        </encoder>
 		        <!-- 此日志文件只记录info级别的 -->
@@ -104,7 +105,7 @@
 		        <append>true</append>
 		        <!-- 日志文件的格式 -->
 		        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
-		            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level %logger Line:%-3L - %msg%n</pattern>
+		            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %p [%c] - %m%n</pattern>
 		            <charset>utf-8</charset>
 		        </encoder>
 		        <!-- 此日志文件只记录info级别的 -->
@@ -124,29 +125,29 @@
     </springProfile>
 
     <!-- 开发环境. -->
-     <springProfile name="dev">
-        <!-- 控制台输出 -->   
-		    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
-		        <!--encoder 默认配置为PatternLayoutEncoder-->
-		        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
-		            <pattern>%d{dd HH:mm:ss} %p [%c] - %m%n</pattern>
-		            <charset>utf-8</charset>
-		        </encoder>
-		        <!--此日志appender是为开发使用，只配置最底级别，控制台输出的日志级别是大于或等于此级别的日志信息-->
-		        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
-		            <!--格式化输出：%d表示日期，%thread表示线程名，%-5level：级别从左显示5个字符宽度%msg：日志消息，%n是换行符-->
-		            <level>debug</level>
-		        </filter>
-		    </appender>
-		    
-        <logger name="logging.level.jdbc.sqltiming" level="INFO" />
-        <logger name="logging.level.jdbc.resultsettable" level="INFO" />
-        <logger name="logging.level.top.toybus.luyao.common.helper.SmsHelper" level="INFO" />
-        
-        <!-- 日志输出级别 级别排序为： TRACE < DEBUG < INFO < WARN < ERROR -->
-		    <root level="ERROR">
-		        <appender-ref ref="STDOUT" />
-		    </root>
-    </springProfile>
+	  <springProfile name="dev">
+	     <!-- 控制台输出 -->   
+	   <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+	       <!--encoder 默认配置为PatternLayoutEncoder-->
+	       <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+	           <pattern>%d{dd HH:mm:ss} %p [%c] - %m%n</pattern>
+	           <charset>utf-8</charset>
+	       </encoder>
+	       <!--此日志appender是为开发使用，只配置最底级别，控制台输出的日志级别是大于或等于此级别的日志信息-->
+	       <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+	           <!--格式化输出：%d表示日期，%thread表示线程名，%-5level：级别从左显示5个字符宽度%msg：日志消息，%n是换行符-->
+	           <level>debug</level>
+	       </filter>
+	   </appender>
+	   
+     <logger name="logging.level.jdbc.sqltiming" level="INFO" />
+     <logger name="logging.level.jdbc.resultsettable" level="INFO" />
+     <logger name="logging.level.top.toybus.luyao.common.helper.SmsHelper" level="INFO" />
+	     
+	     <!-- 日志输出级别 级别排序为： TRACE < DEBUG < INFO < WARN < ERROR -->
+	   <root level="INFO">
+	       <appender-ref ref="STDOUT" />
+	   </root>
+	 </springProfile>
     
 </configuration>
