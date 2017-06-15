@@ -345,7 +345,7 @@ public class UserService {
         User loginUser = userForm.getLoginUser();
 
         // 是否是新增
-        boolean isNew = loginUser.getOwner() == null;
+        boolean isNew = loginUser.getOwner() == 0;
         Vehicle vehicle = null;
         if (isNew) { // 不是车主，准备新增车辆信息
             vehicle = new Vehicle();
