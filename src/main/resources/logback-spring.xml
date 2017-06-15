@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
     <!--
+      关于配置项参考：http://tengj.top/2017/04/05/springboot7/
        说明：
        1、日志级别及文件
            日志记录采用分级记录，级别与日志文件名相对应，不同级别的日志信息记录到不同的日志文件中
@@ -18,7 +19,6 @@
            FILEDEBUG对应debug级别，文件名以log-debug-xxx.log形式命名
            stdout将日志信息输出到控制上，为方便开发测试使用
     -->
-    <include resource="org/springframework/boot/logging/logback/base.xml" />
     
     <!-- 测试环境+生产环境.多个使用逗号隔开. -->
     <springProfile name="test, prod">
@@ -29,7 +29,7 @@
         <!-- 日志记录器，日期滚动记录 -->
 		    <appender name="FILEERROR" class="ch.qos.logback.core.rolling.RollingFileAppender">
 		        <!-- 正在记录的日志文件的路径及文件名 -->
-		        <file>${LOG_PATH}/log_error.log</file>
+		        <file>${LOG_PATH}/log-error.log</file>
 		        <!-- 日志记录器的滚动策略，按日期，按大小记录 -->
 		        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
 		            <!-- 归档的日志文件的路径，例如今天是2013-12-21日志，当前写的日志文件路径为file节点指定，可以将此文件与file指定文件路径设置为不同路径，从而将当前日志文件或归档日志文件置不同的目录。
@@ -45,8 +45,8 @@
 		        <append>true</append>
 		        <!-- 日志文件的格式 -->
 		        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
-		            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %p [%c] - %m%n</pattern>
-		            <charset>utf-8</charset>
+		            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level %logger{36} - %msg%n</pattern>
+		            <charset>UTF-8</charset>
 		        </encoder>
 		        <!-- 此日志文件只记录info级别的 -->
 		        <filter class="ch.qos.logback.classic.filter.LevelFilter">
@@ -59,7 +59,7 @@
 		    <!-- 日志记录器，日期滚动记录 -->
 		    <appender name="FILEWARN" class="ch.qos.logback.core.rolling.RollingFileAppender">
 		        <!-- 正在记录的日志文件的路径及文件名 -->
-		        <file>${LOG_PATH}/log_warn.log</file>
+		        <file>${LOG_PATH}/log-warn.log</file>
 		        <!-- 日志记录器的滚动策略，按日期，按大小记录 -->
 		        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
 		            <!-- 归档的日志文件的路径，例如今天是2013-12-21日志，当前写的日志文件路径为file节点指定，可以将此文件与file指定文件路径设置为不同路径，从而将当前日志文件或归档日志文件置不同的目录。
@@ -75,8 +75,8 @@
 		        <append>true</append>
 		        <!-- 日志文件的格式 -->
 		        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
-		            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %p [%c] - %m%n</pattern>
-		            <charset>utf-8</charset>
+		            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level %logger{36} - %msg%n</pattern>
+		            <charset>UTF-8</charset>
 		        </encoder>
 		        <!-- 此日志文件只记录info级别的 -->
 		        <filter class="ch.qos.logback.classic.filter.LevelFilter">
@@ -89,7 +89,7 @@
 		    <!-- 日志记录器，日期滚动记录 -->
 		    <appender name="FILEINFO" class="ch.qos.logback.core.rolling.RollingFileAppender">
 		        <!-- 正在记录的日志文件的路径及文件名 -->
-		        <file>${LOG_PATH}/log_info.log</file>
+		        <file>${LOG_PATH}/log-info.log</file>
 		        <!-- 日志记录器的滚动策略，按日期，按大小记录 -->
 		        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
 		            <!-- 归档的日志文件的路径，例如今天是2013-12-21日志，当前写的日志文件路径为file节点指定，可以将此文件与file指定文件路径设置为不同路径，从而将当前日志文件或归档日志文件置不同的目录。
@@ -105,8 +105,8 @@
 		        <append>true</append>
 		        <!-- 日志文件的格式 -->
 		        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
-		            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %p [%c] - %m%n</pattern>
-		            <charset>utf-8</charset>
+		            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level %logger{36} - %msg%n</pattern>
+		            <charset>UTF-8</charset>
 		        </encoder>
 		        <!-- 此日志文件只记录info级别的 -->
 		        <filter class="ch.qos.logback.classic.filter.LevelFilter">
@@ -115,6 +115,8 @@
 		            <onMismatch>DENY</onMismatch>
 		        </filter>
 		    </appender>
+		    
+		    <logger name="org.springframework.web" level="INFO" />
 		    
 		    <!-- 日志输出级别 级别排序为： TRACE < DEBUG < INFO < WARN < ERROR -->
         <root level="INFO">
@@ -126,28 +128,28 @@
 
     <!-- 开发环境. -->
 	  <springProfile name="dev">
-	     <!-- 控制台输出 -->   
-	   <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
-	       <!--encoder 默认配置为PatternLayoutEncoder-->
-	       <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
-	           <pattern>%d{dd HH:mm:ss} %p [%c] - %m%n</pattern>
-	           <charset>utf-8</charset>
-	       </encoder>
-	       <!--此日志appender是为开发使用，只配置最底级别，控制台输出的日志级别是大于或等于此级别的日志信息-->
-	       <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
-	           <!--格式化输出：%d表示日期，%thread表示线程名，%-5level：级别从左显示5个字符宽度%msg：日志消息，%n是换行符-->
-	           <level>debug</level>
-	       </filter>
-	   </appender>
-	   
-     <logger name="logging.level.jdbc.sqltiming" level="INFO" />
-     <logger name="logging.level.jdbc.resultsettable" level="INFO" />
-     <logger name="logging.level.top.toybus.luyao.common.helper.SmsHelper" level="INFO" />
-	     
-	     <!-- 日志输出级别 级别排序为： TRACE < DEBUG < INFO < WARN < ERROR -->
-	   <root level="ERROR">
-	       <appender-ref ref="STDOUT" />
-	   </root>
+		     <!-- 控制台输出 -->   
+		   <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+		       <!--encoder 默认配置为PatternLayoutEncoder-->
+		       <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+		           <pattern>%d{HH:mm:ss} %-5level %logger{36} - %msg%n</pattern>
+		           <charset>UTF-8</charset>
+		       </encoder>
+		       <!--此日志appender是为开发使用，只配置最底级别，控制台输出的日志级别是大于或等于此级别的日志信息-->
+		       <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+		           <!--格式化输出：%d表示日期，%thread表示线程名，%-5level：级别从左显示5个字符宽度%msg：日志消息，%n是换行符-->
+		           <level>INFO</level>
+		       </filter>
+		   </appender>
+		   
+		    <logger name="jdbc.sqltiming" level="INFO" />
+		    <logger name="jdbc.resultsettable" level="INFO" />
+		    <logger name="top.toybus.luyao.common.helper.SmsHelper" level="INFO" />
+		     
+		     <!-- 日志输出级别 级别排序为： TRACE < DEBUG < INFO < WARN < ERROR -->
+		   <root level="ERROR">
+		       <appender-ref ref="CONSOLE" />
+		   </root>
 	 </springProfile>
     
 </configuration>
