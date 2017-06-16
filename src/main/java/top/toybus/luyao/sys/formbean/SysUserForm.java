@@ -7,9 +7,7 @@ import lombok.ToString;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
-public class UserSysForm extends BaseSysForm {
-
-    private String token;
+public class SysUserForm extends SysBaseForm {
 
     private Long id;
 

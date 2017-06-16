@@ -8,7 +8,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
 import top.toybus.luyao.api.formbean.BaseForm;
-import top.toybus.luyao.sys.formbean.BaseSysForm;
+import top.toybus.luyao.sys.formbean.SysBaseForm;
 
 /**
  * 分页工具类
@@ -56,7 +56,7 @@ public class PageUtils {
      * @param baseSysForm
      * @return PageRequest
      */
-    public static Pageable toPageRequest(BaseSysForm baseSysForm) {
+    public static Pageable toPageRequest(SysBaseForm baseSysForm) {
         return new PageRequest(baseSysForm.getPage(), baseSysForm.getSize());
     }
 

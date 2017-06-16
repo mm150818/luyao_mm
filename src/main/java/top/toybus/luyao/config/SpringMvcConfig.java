@@ -27,6 +27,7 @@ public class SpringMvcConfig extends WebMvcConfigurerAdapter {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/api/**"); // 所有api允许跨域访问
+        registry.addMapping("/sys/**"); // 所有sys允许跨域访问
 
         super.addCorsMappings(registry);
     }

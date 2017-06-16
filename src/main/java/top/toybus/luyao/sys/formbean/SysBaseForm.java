@@ -3,7 +3,7 @@ package top.toybus.luyao.sys.formbean;
 import lombok.Data;
 
 @Data
-public abstract class BaseSysForm {
+public abstract class SysBaseForm {
     /**
      * @return 默认分页索引，基于0
      */

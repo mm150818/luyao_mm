@@ -11,6 +11,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -25,7 +26,7 @@ import top.toybus.luyao.common.properties.FileProperties;
 @Entity
 @Table(name = "tb_user")
 @SuppressWarnings("serial")
-public class UserSys implements Serializable {
+public class SysUser implements Serializable {
     @Id
     @GeneratedValue
     private Long id;
@@ -64,6 +65,9 @@ public class UserSys implements Serializable {
     private Integer owner;
 
     private Long vehicleId;
+
+    @Transient
+    private SysVehicle vehicle;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createTime;

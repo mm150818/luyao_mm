@@ -37,6 +37,7 @@ import top.toybus.luyao.api.repository.BalanceRepository;
 import top.toybus.luyao.api.repository.PaymentRepository;
 import top.toybus.luyao.api.repository.RideRepository;
 import top.toybus.luyao.api.repository.RideViaRepository;
+import top.toybus.luyao.api.repository.UserRepository;
 import top.toybus.luyao.api.repository.UserRideRepository;
 import top.toybus.luyao.api.repository.VehicleRepository;
 import top.toybus.luyao.common.bean.ResData;
@@ -55,6 +56,8 @@ public class RideService {
     private RideViaRepository rideViaRepository;
     @Autowired
     private UserRideRepository userRideRepository;
+    @Autowired
+    private UserRepository userRepository;
     @Autowired
     private VehicleRepository vehicleRepository;
     @Autowired
@@ -704,7 +707,10 @@ public class RideService {
         if (userRide.getConfirmed()) {
             return resData.setCode(3).setMsg("该行程已结束"); // err3
         }
+        User loginUser = rideForm.getLoginUser();
         userRide.setConfirmed(true); // 已结束
+        loginUser.setRideCount(loginUser.getRideCount() + 1);  // 拼车次数+1
+        userRepository.save(loginUser);
 
         Ride ride = userRide.getRide();
         User owner = ride.getOwner();

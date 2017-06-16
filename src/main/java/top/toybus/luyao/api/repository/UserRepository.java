@@ -29,4 +29,8 @@ public interface UserRepository extends BaseRepository<User, Long> {
 
     List<UserBean> findListBy(Pageable pageable);
 
+    @Modifying
+    @Query("update User u set u.rideCount = u.rideCount + 1 where u = ?1")
+    int addRideCount(User user);
+
 }
