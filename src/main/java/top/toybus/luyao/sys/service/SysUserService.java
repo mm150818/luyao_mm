@@ -42,8 +42,8 @@ public class SysUserService {
         ResData resData = ResData.get();
         Long id = userSysForm.getId();
         SysUser userSys = sysUserRepository.findOne(id);
+        userSys.setOwner(userSysForm.getOwner());
         if (userSys.getOwner() == 2) {
-            userSys.setOwner(userSysForm.getOwner());
             if (userSysForm.getOwner() == 1) {
                 // 发送短信
                 smsHelper.sendSms(userSys.getMobile(), smsHelper.smsProperties.getTplOwnerOk());
@@ -51,10 +51,6 @@ public class SysUserService {
                 // 发送短信
                 smsHelper.sendSms(userSys.getMobile(), smsHelper.smsProperties.getTplOwnerFail());
             }
-        } else if (userSys.getOwner() == 1) {
-            resData.setCode(1).setMsg("已经是车主");
-        } else {
-            resData.setCode(2).setMsg("用户未提交审核");
         }
         return resData;
     }
