@@ -193,7 +193,9 @@ public class RideService {
         Page<Ride> pageRide = rideRepository.findAll(toSpecification(rideForm), pageable);
         pageRide.forEach(ride -> {
             User owner = ride.getOwner();
-            owner.setVehicle(vehicleRepository.findOne(owner.getVehicleId()));
+            if (owner.getVehicleId() != null) {
+                owner.setVehicle(vehicleRepository.findOne(owner.getVehicleId()));
+            }
         });
         resData.putAll(PageUtils.toMap("rideList", pageRide));
         return resData;
@@ -247,8 +249,10 @@ public class RideService {
                 return resData.setCode(1).setMsg("该行程不存在");
             }
             User owner = ride.getOwner();
-            Vehicle vehicle = vehicleRepository.findOne(owner.getVehicleId());
-            owner.setVehicle(vehicle);
+            if (owner.getVehicleId() != null) {
+                Vehicle vehicle = vehicleRepository.findOne(owner.getVehicleId());
+                owner.setVehicle(vehicle);
+            }
             resData.put("ride", ride);
         }
         return resData;

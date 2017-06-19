@@ -89,8 +89,10 @@ public class SysUserService {
         ResData resData = ResData.get();
         Long id = userSysForm.getId();
         SysUser user = sysUserRepository.findOne(id);
-        SysVehicle vehicle = sysVehicleRepository.findOne(user.getVehicleId());
-        user.setVehicle(vehicle);
+        if (user.getVehicleId() != null) {
+            SysVehicle vehicle = sysVehicleRepository.findOne(user.getVehicleId());
+            user.setVehicle(vehicle);
+        }
         resData.put("user", user);
         return resData;
     }
