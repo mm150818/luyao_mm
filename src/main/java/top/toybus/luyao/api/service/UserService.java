@@ -199,6 +199,17 @@ public class UserService {
     }
 
     /**
+     * 登出
+     */
+    public ResData logout(UserForm userForm) {
+        ResData resData = ResData.get();
+        User loginUser = userForm.getLoginUser();
+        loginUser.setStatus(0);
+        userRepository.save(loginUser);
+        return resData;
+    }
+
+    /**
      * 修改密码
      */
     public ResData updateUserPwd(UserForm userForm) {

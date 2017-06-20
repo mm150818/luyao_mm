@@ -38,6 +38,16 @@ public class UserController {
     }
 
     /**
+     * 用户登出
+     */
+    @LoginRequired
+    @RequestMapping("/logout")
+    public ResData logout(UserForm userForm) {
+        ResData resData = userService.logout(userForm);
+        return resData;
+    }
+
+    /**
      * 修改密码
      */
     @LoginRequired
