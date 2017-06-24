@@ -14,12 +14,14 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
+import top.toybus.luyao.api.entity.Activity;
 import top.toybus.luyao.api.entity.Balance;
 import top.toybus.luyao.api.entity.Payment;
 import top.toybus.luyao.api.entity.RideVia;
 import top.toybus.luyao.api.entity.User;
 import top.toybus.luyao.api.entity.UserRide;
 import top.toybus.luyao.api.formbean.TradeForm;
+import top.toybus.luyao.api.repository.ActivityRepository;
 import top.toybus.luyao.api.repository.BalanceRepository;
 import top.toybus.luyao.api.repository.PaymentRepository;
 import top.toybus.luyao.api.repository.UserRepository;
@@ -40,6 +42,8 @@ public class TradeService {
     private PaymentRepository paymentRepository;
     @Autowired
     private BalanceRepository balanceRepository;
+    @Autowired
+    private ActivityRepository activityRepository;
     @Autowired
     private TradeHelper tradeHelper;
     @Autowired
@@ -124,7 +128,16 @@ public class TradeService {
                         } else if (type == 2) { // 充值
                             balance.setType(1); // 充值
 
-                            user.setBalance(user.getBalance() + payment.getTotalAmount());
+                            Long amount = payment.getTotalAmount();
+                            // 关联活动
+                            if (payment.getActivityId() != null) {
+                                Activity activity = activityRepository.findOne(payment.getActivityId());
+                                amount = activity.getAmount() + activity.getExtraAmount();
+
+                                balance.setActivity(activity);
+                            }
+
+                            user.setBalance(user.getBalance() + amount);
                         } else if (type == 4) { // 绑定账号
                             balance.setType(5); // 绑定支付宝账号
 

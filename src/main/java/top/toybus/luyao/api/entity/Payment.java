@@ -30,6 +30,8 @@ public class Payment implements Serializable {
 
     private Long userId;
 
+    private Long activityId;
+
     private Integer type;
 
     private Integer way;
