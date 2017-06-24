@@ -304,7 +304,7 @@ public class TradeHelper {
             AlipayFundTransToaccountTransferRequest request = new AlipayFundTransToaccountTransferRequest();
             AlipayFundTransToaccountTransferModel model = new AlipayFundTransToaccountTransferModel();
             model.setOutBizNo(orderNo.toString());
-            model.setPayeeType("ALIPAY_LOGONID");
+            model.setPayeeType("ALIPAY_USERID");
             model.setPayeeAccount(account);
             model.setAmount(FormatUtils.moneyCent2Yuan(amount));
             model.setPayerShowName(body);

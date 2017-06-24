@@ -39,6 +39,7 @@ import top.toybus.luyao.api.repository.UserRepository;
 import top.toybus.luyao.api.repository.UserRideRepository;
 import top.toybus.luyao.api.repository.VehicleRepository;
 import top.toybus.luyao.common.bean.ResData;
+import top.toybus.luyao.common.helper.MailHelper;
 import top.toybus.luyao.common.helper.SmsHelper;
 import top.toybus.luyao.common.helper.TradeHelper;
 import top.toybus.luyao.common.util.FormatUtils;
@@ -67,6 +68,8 @@ public class UserService {
     private SmsHelper smsHelper;
     @Autowired
     private TradeHelper tradeHelper;
+    @Autowired
+    private MailHelper mailHelper;
 
     /**
      * 注册用户
@@ -420,6 +423,9 @@ public class UserService {
         vehicle = vehicleRepository.save(vehicle);
         // 修改车辆信息，重新审核
         userRepository.updateUserOwnerById(loginUser.getId(), 2, vehicle.getId());
+
+        // 发送邮件
+        mailHelper.sendSimpleMail("车主认证", "有新的车主需要认证。");
 
         resData.put("vehicle", vehicle);
         return resData;

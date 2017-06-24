@@ -138,11 +138,14 @@ public class TradeService {
                             }
 
                             user.setBalance(user.getBalance() + amount);
+                            user.setIncome(user.getIncome() + amount);
                         } else if (type == 4) { // 绑定账号
                             balance.setType(5); // 绑定支付宝账号
 
-                            user.setBalance(user.getBalance() + payment.getTotalAmount());
-                            String aliAccount = request.getParameter("buyer_logon_id");
+                            Long amount = payment.getTotalAmount();
+                            user.setBalance(user.getBalance() + amount);
+                            user.setIncome(user.getIncome() + amount);
+                            String aliAccount = request.getParameter("buyer_id");
                             user.setAliAccount(aliAccount);
                         }
 
