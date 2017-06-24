@@ -122,7 +122,10 @@ public class TradeService {
                             User user = userRepository.findOne(userRide.getUserId());
                             sendOrderOkSms(user, userRide);
                         } else if (type == 2) { // 充值
-                            balance.setType(1);
+                            balance.setType(1); // 充值
+
+                            User user = userRepository.findOne(payment.getUserId());
+                            user.setBalance(user.getBalance() + payment.getTotalAmount());
                         }
 
                         balanceRepository.save(balance);
