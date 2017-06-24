@@ -629,23 +629,24 @@ public class UserService {
             return resData.setCode(ResData.C_PARAM_ERROR).setMsg("支付方式格式不正确");
         }
         Integer way = userForm.getWay();
+        User loginUser = userForm.getLoginUser();
         if (way == 1) {
-            if (StringUtils.isBlank(userForm.getAccount())) {
-                return resData.setCode(ResData.C_PARAM_ERROR).setMsg("请输入支付宝收款方账户");
-            } else if (StringUtils.length(userForm.getAccount()) > 100) {
-                return resData.setCode(ResData.C_PARAM_ERROR).setMsg("支付宝收款方账户格式不正确");
+            // 判断是否绑定支付宝收款账号
+            if (loginUser.getAliAccount() == null) {
+                return resData.setCode(2).setMsg("请先绑定支付宝收款账号"); // err2
             }
         }
-        User loginUser = userForm.getLoginUser();
         Long money = userForm.getMoney();
         Long balance = loginUser.getBalance(); // 账户余额
         if (balance.longValue() < money.longValue()) {
             return resData.setCode(1).setMsg("账户余额目前为" + FormatUtils.moneyCent2Yuan(balance) + "元"); // err1
         }
-        String account = userForm.getAccount();
+        String account = loginUser.getAliAccount();
         Long orderNo = UUIDUtils.getOrderNo();
 
-        Map<String, Object> resultMap = tradeHelper.transfer(way, orderNo, "马洲路遥-提现", money, account);
+        // 去掉手续费
+        long money2 = Math.round(money.longValue() * (100 - tradeHelper.tradeProps.getFeePercent()) / 100.0);
+        Map<String, Object> resultMap = tradeHelper.transfer(way, orderNo, "马洲路遥-提现", money2, account);
 
         Payment payment = new Payment();
         payment.setCreateTime(LocalDateTime.now());
@@ -696,4 +697,47 @@ public class UserService {
         return resData;
     }
 
+    /**
+     * 提现信息
+     */
+    public ResData drawCashInfo(UserForm userForm) {
+        ResData resData = ResData.get();
+        /*if (userForm.getWay() == null) {
+            return resData.setCode(ResData.C_PARAM_ERROR).setMsg("请选择支付方式");
+        } else if (userForm.getWay() != 1 && userForm.getWay() != 2) {
+            return resData.setCode(ResData.C_PARAM_ERROR).setMsg("支付方式格式不正确");
+        }*/
+        Integer way = 1; // 先默认是支付宝 userForm.getWay();
+        User loginUser = userForm.getLoginUser();
+        boolean hasBindAccount = true;
+        if (way == 1) {
+            // 判断是否绑定支付宝收款账号
+            if (loginUser.getAliAccount() == null) {
+                hasBindAccount = false;
+            }
+        }
+        if (!hasBindAccount) { // 没有绑定账号，创建绑定账号订单
+            Long orderNo = UUIDUtils.getOrderNo();
+            Long money = 1L; // 1分钱绑定
+            Map<String, Object> resultMap = tradeHelper.unifiedOrder(way, orderNo, "马洲路遥-绑定账号", money, 5);
+
+            Payment payment = new Payment();
+            payment.setCreateTime(LocalDateTime.now());
+            payment.setTotalAmount(money);
+            payment.setOrderNo(orderNo);
+            payment.setWay(way);
+            payment.setType(4); // 绑定账号
+            payment.setUserId(loginUser.getId());
+            payment.setStatus(0);
+
+            payment = paymentRepository.save(payment);
+
+            resData.put("payment", payment);
+            resData.putAll(resultMap);
+        }
+        resData.put("feePercent", tradeHelper.tradeProps.getFeePercent()); // 手续费百分比数值
+        resData.put("balance", loginUser.getBalance());
+        resData.put("hasBindAccount", hasBindAccount);
+        return resData;
+    }
 }

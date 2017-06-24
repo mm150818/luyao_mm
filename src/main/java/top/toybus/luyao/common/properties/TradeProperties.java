@@ -34,4 +34,7 @@ public class TradeProperties {
     private String WX_CERT_LOCAL_PATH;
     private String WX_CERT_PASSWORD;
 
+    // 提现手续费百分比
+    private int feePercent = 0;
+
 }

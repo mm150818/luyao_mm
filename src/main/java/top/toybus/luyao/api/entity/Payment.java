@@ -76,6 +76,7 @@ public class Payment implements Serializable {
             put(1, "行程");
             put(2, "充值");
             put(3, "提现");
+            put(4, "绑定账户");
         }
     };
 

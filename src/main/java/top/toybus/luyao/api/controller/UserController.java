@@ -146,4 +146,13 @@ public class UserController {
         return resData;
     }
 
+    /**
+     * 用户提现信息查询
+     */
+    @LoginRequired
+    @RequestMapping("/drawCashInfo")
+    public ResData drawCashInfo(UserForm userForm) {
+        ResData resData = userService.drawCashInfo(userForm);
+        return resData;
+    }
 }

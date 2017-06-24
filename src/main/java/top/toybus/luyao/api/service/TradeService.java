@@ -115,17 +115,22 @@ public class TradeService {
                         balance.setUserId(payment.getUserId());
                         balance.setWay(payment.getWay());
 
+                        User user = userRepository.findOne(payment.getUserId());
                         if (type == 1) { // 行程订单
                             balance.setType(4); // 行程支出
 
                             UserRide userRide = userRideRepository.findByPayment(payment);
-                            User user = userRepository.findOne(userRide.getUserId());
                             sendOrderOkSms(user, userRide);
                         } else if (type == 2) { // 充值
                             balance.setType(1); // 充值
 
-                            User user = userRepository.findOne(payment.getUserId());
                             user.setBalance(user.getBalance() + payment.getTotalAmount());
+                        } else if (type == 4) { // 绑定账号
+                            balance.setType(5); // 绑定支付宝账号
+
+                            user.setBalance(user.getBalance() + payment.getTotalAmount());
+                            String aliAccount = request.getParameter("buyer_logon_id");
+                            user.setAliAccount(aliAccount);
                         }
 
                         balanceRepository.save(balance);

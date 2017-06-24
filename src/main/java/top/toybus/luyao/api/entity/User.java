@@ -68,6 +68,8 @@ public class User implements Serializable {
 
     private Integer owner;
 
+    private String aliAccount;
+
     @JsonIgnore
     private Long vehicleId;
 

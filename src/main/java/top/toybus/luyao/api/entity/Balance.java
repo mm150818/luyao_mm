@@ -50,6 +50,7 @@ public class Balance implements Serializable {
             put(2, "提现");
             put(3, "行程收入");
             put(4, "行程支出");
+            put(5, "绑定账户");
         }
     };
 
