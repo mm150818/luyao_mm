@@ -54,9 +54,12 @@ public class SmsHelper {
         RideVia rideVia = userRide.getRideVia();
         paramMap.put("name", String.format("[%s]", userRide.getRide().getStartEndPoint()));
         paramMap.put("time",
-                rideVia.getTime() == null ? "未知" : rideVia.getTime().format(DateTimeFormatter.ofPattern("M月d日HH点mm分")));
+                rideVia.getTime() == null ? "待定" : rideVia.getTime().format(DateTimeFormatter.ofPattern("M月d日HH点mm分")));
         paramMap.put("address", rideVia.getPoint());
+        // 给乘客发短信
         this.sendSms(user.getMobile(), this.getSmsProperties().getTplOrderOk(), paramMap);
+        // 给司机发短信
+        this.sendSms(userRide.getRide().getOwner().getMobile(), this.getSmsProperties().getTplOrderOk(), paramMap);
     }
 
     /**

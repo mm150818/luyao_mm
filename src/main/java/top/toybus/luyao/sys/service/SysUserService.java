@@ -43,14 +43,12 @@ public class SysUserService {
         Long id = userSysForm.getId();
         SysUser userSys = sysUserRepository.findOne(id);
         userSys.setOwner(userSysForm.getOwner());
-        if (userSys.getOwner() == 2) {
-            if (userSysForm.getOwner() == 1) {
-                // 发送短信
-                smsHelper.sendSms(userSys.getMobile(), smsHelper.smsProperties.getTplOwnerOk());
-            } else if (userSysForm.getOwner() == 3) {
-                // 发送短信
-                smsHelper.sendSms(userSys.getMobile(), smsHelper.smsProperties.getTplOwnerFail());
-            }
+        if (userSysForm.getOwner() == 1) {
+            // 发送短信
+            smsHelper.sendSms(userSys.getMobile(), smsHelper.smsProperties.getTplOwnerOk());
+        } else if (userSysForm.getOwner() == 3) {
+            // 发送短信
+            smsHelper.sendSms(userSys.getMobile(), smsHelper.smsProperties.getTplOwnerFail());
         }
         return resData;
     }
