@@ -44,6 +44,13 @@ public class Balance implements Serializable {
 
     private Long money;
 
+    public Long getMoney() {
+        if (this.type == 2 || this.type == 4) {
+            return -this.money;
+        }
+        return this.money;
+    }
+
     private Integer type;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
