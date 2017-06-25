@@ -595,8 +595,11 @@ public class RideService {
             }
             if (rideForm.getWay() == null) {
                 return resData.setCode(ResData.C_PARAM_ERROR).setMsg("请选择支付方式");
-            } else if (rideForm.getWay() != 1 && rideForm.getWay() != 2) {
+            } else if (rideForm.getWay() != 1 && rideForm.getWay() != 2 && rideForm.getWay() != 3) {
                 return resData.setCode(ResData.C_PARAM_ERROR).setMsg("支付方式格式不正确");
+            }
+            if (rideForm.getWay() == 3 && loginUser.getBalance() < userRide.getTotalAmount()) {
+                return resData.setCode(5).setMsg("账户余额不足"); // err5
             }
             ride.setRemainSeats(userRide.getSeats() + ride.getRemainSeats() - rideForm.getSeats()); // 修改剩余座位数
             userRide.setSeats(rideForm.getSeats()); // 修改订单座位数
@@ -606,21 +609,37 @@ public class RideService {
             payment.setWay(rideForm.getWay()); // 修改支付方式
             payment.setTotalAmount(userRide.getTotalAmount()); // 修改订单总金额
 
-            long millis = Duration.of(5, ChronoUnit.MINUTES).toMillis()
-                    - Duration.between(payment.getCreateTime(), LocalDateTime.now()).toMillis();
-            int mins = (int) (millis / 1000 / 60); // 剩余支付分钟数
-            if (mins < 1) { // 如果剩余支付分钟数为0，则设置为1分钟后超时
-                mins = 1;
-            }
-            Map<String, Object> orderMap = tradeHelper.unifiedOrder(payment.getWay(), payment.getOrderNo(), "马洲路遥-行程支付",
-                    payment.getTotalAmount(), mins);
-
-            if (millis >= 0) {
-                resData.setCode(0).put("remainPayMillis", millis);
-            }
-            // resData.put("userRide", userRide);
             resData.put("payment", payment);
-            resData.putAll(orderMap);
+            if (rideForm.getWay() == 3) { // 余额扣款
+                loginUser.setBalance(loginUser.getBalance() - payment.getTotalAmount());
+                userRepository.save(loginUser);
+                payment.setStatus(1); // 已支付
+
+                Balance balance = new Balance(); // 收支明细
+                balance.setCreateTime(LocalDateTime.now());
+                balance.setMoney(payment.getTotalAmount());
+                balance.setPaymentId(payment.getId());
+                balance.setUserId(payment.getUserId());
+                balance.setWay(payment.getWay());
+                balance.setType(4); // 行程支出
+                balanceRepository.save(balance);
+
+                smsHelper.sendOrderOkSms(loginUser, userRide);
+                return resData; // OK
+            } else {
+                long millis = Duration.of(5, ChronoUnit.MINUTES).toMillis()
+                        - Duration.between(payment.getCreateTime(), LocalDateTime.now()).toMillis();
+                if (millis >= 0) {
+                    resData.setCode(0).put("remainPayMillis", millis);
+                }
+                int mins = (int) (millis / 1000 / 60); // 剩余支付分钟数
+                if (mins < 1) { // 如果剩余支付分钟数为0，则设置为1分钟后超时
+                    mins = 1;
+                }
+                Map<String, Object> orderMap = tradeHelper.unifiedOrder(payment.getWay(), payment.getOrderNo(),
+                        "马洲路遥-行程支付", payment.getTotalAmount(), mins);
+                resData.putAll(orderMap);
+            }
             return resData.setCode(3).setMsg("当前行程下您有一个订单未支付"); // err3
         }
         // 新建行程订单
@@ -629,7 +648,7 @@ public class RideService {
         }
         if (rideForm.getWay() == null) {
             return resData.setCode(ResData.C_PARAM_ERROR).setMsg("请选择支付方式");
-        } else if (rideForm.getWay() != 1 && rideForm.getWay() != 2) {
+        } else if (rideForm.getWay() != 1 && rideForm.getWay() != 2 && rideForm.getWay() != 3) {
             return resData.setCode(ResData.C_PARAM_ERROR).setMsg("支付方式格式不正确");
         }
 
@@ -642,6 +661,10 @@ public class RideService {
         userRide.setCanceled(false);
         userRide.setCreateTime(LocalDateTime.now());
         userRide.setUpdateTime(LocalDateTime.now());
+
+        if (rideForm.getWay() == 3 && loginUser.getBalance() < userRide.getTotalAmount()) {
+            return resData.setCode(5).setMsg("账户余额不足"); // err5
+        }
 
         Integer way = rideForm.getWay();
         Long orderNo = UUIDUtils.getOrderNo();
@@ -663,10 +686,27 @@ public class RideService {
         ride.setRemainSeats(ride.getRemainSeats() - userRide.getSeats()); // 修改剩余座位数
         ride.setUpdateTime(LocalDateTime.now());
 
-        Map<String, Object> orderMap = tradeHelper.unifiedOrder(way, orderNo, "马洲路遥-行程支付", totalAmount, 5);
+        if (rideForm.getWay() == 3) { // 余额扣款
+            loginUser.setBalance(loginUser.getBalance() - payment.getTotalAmount());
+            userRepository.save(loginUser);
+            payment.setStatus(1); // 已支付
+
+            Balance balance = new Balance(); // 收支明细
+            balance.setCreateTime(LocalDateTime.now());
+            balance.setMoney(payment.getTotalAmount());
+            balance.setPaymentId(payment.getId());
+            balance.setUserId(payment.getUserId());
+            balance.setWay(payment.getWay());
+            balance.setType(4); // 行程支出
+            balanceRepository.save(balance);
+
+            smsHelper.sendOrderOkSms(loginUser, userRide);
+        } else {
+            Map<String, Object> orderMap = tradeHelper.unifiedOrder(way, orderNo, "马洲路遥-行程支付", totalAmount, 5);
+            resData.putAll(orderMap);
+        }
 
         resData.put("payment", payment);
-        resData.putAll(orderMap);
         return resData;
     }
 

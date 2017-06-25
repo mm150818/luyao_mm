@@ -65,13 +65,6 @@ public class Payment implements Serializable {
         return statusMap.get(this.status);
     }
 
-    public String getWayStr() {
-        if (way == null) {
-            return "";
-        }
-        return way == 1 ? "支付宝" : way == 2 ? "微信" : null;
-    }
-
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public static final Map<Integer, String> typeMap = new HashMap() {
         {
@@ -84,5 +77,18 @@ public class Payment implements Serializable {
 
     public String getTypeStr() {
         return typeMap.get(this.type);
+    }
+
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    public static final Map<Integer, String> wayMap = new HashMap() {
+        {
+            put(1, "支付宝");
+            put(2, "微信");
+            put(3, "余额支付");
+        }
+    };
+
+    public String getWayStr() {
+        return wayMap.get(this.way);
     }
 }

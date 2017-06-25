@@ -1,7 +1,6 @@
 package top.toybus.luyao.api.service;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -17,7 +16,6 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 import top.toybus.luyao.api.entity.Activity;
 import top.toybus.luyao.api.entity.Balance;
 import top.toybus.luyao.api.entity.Payment;
-import top.toybus.luyao.api.entity.RideVia;
 import top.toybus.luyao.api.entity.User;
 import top.toybus.luyao.api.entity.UserRide;
 import top.toybus.luyao.api.formbean.TradeForm;
@@ -72,19 +70,6 @@ public class TradeService {
     }
 
     /**
-     * 发送订购成功短信
-     */
-    private void sendOrderOkSms(User user, UserRide userRide) {
-        // 5月12日19点30分中潭路4号口不见不散（当用户预约并支付成功时收到的提醒）
-        Map<String, String> paramMap = new HashMap<>();
-        RideVia rideVia = userRide.getRideVia();
-        paramMap.put("name", String.format("[%s]", userRide.getRide().getStartEndPoint()));
-        paramMap.put("time", rideVia.getTime().format(DateTimeFormatter.ofPattern("M月d日HH点mm分")));
-        paramMap.put("address", rideVia.getPoint());
-        smsHelper.sendSms(user.getMobile(), smsHelper.getSmsProperties().getTplOrderOk(), paramMap);
-    }
-
-    /**
      * 支付宝异步通知
      */
     public String aliAsyncNotify() {
@@ -124,7 +109,7 @@ public class TradeService {
                             balance.setType(4); // 行程支出
 
                             UserRide userRide = userRideRepository.findByPayment(payment);
-                            sendOrderOkSms(user, userRide);
+                            smsHelper.sendOrderOkSms(user, userRide);
                         } else if (type == 2) { // 充值
                             balance.setType(1); // 充值
 
@@ -190,7 +175,7 @@ public class TradeService {
                         if (type == 1) { // 行程订单
                             UserRide userRide = userRideRepository.findByPayment(payment);
                             User user = userRepository.findOne(userRide.getUserId());
-                            sendOrderOkSms(user, userRide);
+                            smsHelper.sendOrderOkSms(user, userRide);
                         }
                     }
                 } else {

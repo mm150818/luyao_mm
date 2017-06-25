@@ -64,10 +64,16 @@ public class Balance implements Serializable {
         return typeMap.get(this.type);
     }
 
-    public String getWayStr() {
-        if (way == null) {
-            return "";
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    public static final Map<Integer, String> wayMap = new HashMap() {
+        {
+            put(1, "支付宝");
+            put(2, "微信");
+            put(3, "余额支付");
         }
-        return way == 1 ? "支付宝" : way == 2 ? "微信" : null;
+    };
+
+    public String getWayStr() {
+        return wayMap.get(this.way);
     }
 }

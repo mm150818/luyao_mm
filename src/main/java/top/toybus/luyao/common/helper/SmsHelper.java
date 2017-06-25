@@ -1,5 +1,6 @@
 package top.toybus.luyao.common.helper;
 
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -18,6 +19,9 @@ import com.aliyun.mns.model.SmsAttributes;
 
 import lombok.Getter;
 import lombok.extern.log4j.Log4j;
+import top.toybus.luyao.api.entity.RideVia;
+import top.toybus.luyao.api.entity.User;
+import top.toybus.luyao.api.entity.UserRide;
 import top.toybus.luyao.common.properties.SmsProperties;
 
 /**
@@ -39,6 +43,20 @@ public class SmsHelper {
      */
     public boolean isNotProdEnv() {
         return environment.acceptsProfiles("!prod");
+    }
+
+    /**
+     * 发送订购成功短信
+     */
+    public void sendOrderOkSms(User user, UserRide userRide) {
+        // 5月12日19点30分中潭路4号口不见不散（当用户预约并支付成功时收到的提醒）
+        Map<String, String> paramMap = new HashMap<>();
+        RideVia rideVia = userRide.getRideVia();
+        paramMap.put("name", String.format("[%s]", userRide.getRide().getStartEndPoint()));
+        paramMap.put("time",
+                rideVia.getTime() == null ? "未知" : rideVia.getTime().format(DateTimeFormatter.ofPattern("M月d日HH点mm分")));
+        paramMap.put("address", rideVia.getPoint());
+        this.sendSms(user.getMobile(), this.getSmsProperties().getTplOrderOk(), paramMap);
     }
 
     /**
