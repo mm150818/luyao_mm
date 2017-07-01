@@ -155,4 +155,10 @@ public class UserController {
         ResData resData = userService.drawCashInfo(userForm);
         return resData;
     }
+
+    @RequestMapping("/list")
+    public ResData list(UserForm userForm) {
+        ResData resData = userService.list(userForm);
+        return resData;
+    }
 }

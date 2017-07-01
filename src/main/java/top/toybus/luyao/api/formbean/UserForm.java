@@ -65,4 +65,6 @@ public class UserForm extends BaseForm {
     private Integer way;
 
     private String account;
+
+    private Integer[] owner;
 }

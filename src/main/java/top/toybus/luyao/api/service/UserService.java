@@ -746,4 +746,25 @@ public class UserService {
         resData.put("hasBindAccount", hasBindAccount);
         return resData;
     }
+
+    public ResData list(UserForm userForm) {
+        ResData resData = ResData.get();
+        Pageable pageable = PageUtils.toPageRequest(userForm);
+        Page<User> pageUser = userRepository.findAll((new Specification<User>() {
+            @Override
+            public Predicate toPredicate(Root<User> root, CriteriaQuery<?> query, CriteriaBuilder cb) {
+                Predicate predicate = cb.conjunction();
+                List<Expression<Boolean>> expressions = predicate.getExpressions();
+                if (userForm.getOwner() != null && userForm.getOwner().length > 0) {
+                    expressions.add(root.get("owner").in((Object[]) userForm.getOwner()));
+                }
+                query.orderBy(cb.desc(root.get("id")));
+                return predicate;
+            }
+        }), pageable);
+        pageUser.forEach(user -> user
+                .setVehicle(user.getVehicleId() == null ? null : vehicleRepository.findOne(user.getVehicleId())));
+        resData.putAll(PageUtils.toMap("userList", pageUser));
+        return resData;
+    }
 }
