@@ -36,5 +36,7 @@ public class TradeProperties {
 
     // 提现手续费百分比
     private int feePercent = 0;
+    // 佣金保险费
+    private int commission = 0;
 
 }

@@ -759,6 +759,7 @@ public class RideService {
         Ride ride = userRide.getRide();
         User owner = ride.getOwner();
         Long totalAmount = payment.getTotalAmount();
+        totalAmount -= tradeHelper.tradeProps.getCommission(); // 去掉佣金
         // 车主收入明细
         Balance balance = new Balance();
         balance.setCreateTime(LocalDateTime.now());
@@ -834,6 +835,7 @@ public class RideService {
                 Payment payment = userRide.getPayment();
                 User owner = ride.getOwner();
                 Long totalAmount = payment.getTotalAmount();
+                totalAmount -= tradeHelper.tradeProps.getCommission(); // 去掉佣金
 
                 // 车主收入明细
                 Balance balance = new Balance();
