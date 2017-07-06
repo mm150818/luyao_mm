@@ -24,6 +24,7 @@ import top.toybus.luyao.api.repository.BalanceRepository;
 import top.toybus.luyao.api.repository.PaymentRepository;
 import top.toybus.luyao.api.repository.UserRepository;
 import top.toybus.luyao.api.repository.UserRideRepository;
+import top.toybus.luyao.api.repository.VehicleRepository;
 import top.toybus.luyao.common.bean.ResData;
 import top.toybus.luyao.common.helper.SmsHelper;
 import top.toybus.luyao.common.helper.TradeHelper;
@@ -42,6 +43,8 @@ public class TradeService {
     private BalanceRepository balanceRepository;
     @Autowired
     private ActivityRepository activityRepository;
+    @Autowired
+    private VehicleRepository vehicleRepository;
     @Autowired
     private TradeHelper tradeHelper;
     @Autowired
@@ -109,6 +112,8 @@ public class TradeService {
                             balance.setType(4); // 行程支出
 
                             UserRide userRide = userRideRepository.findByPayment(payment);
+                            userRide.getRide().getOwner().setVehicle(
+                                    vehicleRepository.findOne(userRide.getRide().getOwner().getVehicleId()));
                             smsHelper.sendOrderOkSms(user, userRide);
                         } else if (type == 2) { // 充值
                             balance.setType(1); // 充值

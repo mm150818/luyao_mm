@@ -21,26 +21,26 @@ import top.toybus.luyao.common.helper.SmsHelper;
 @Transactional
 @ActiveProfiles("dev")
 public class smsTests {
-	@Autowired
-	private SmsHelper smsHelper;
+    @Autowired
+    private SmsHelper smsHelper;
 
-	@Test
-	public void test1() {
-		Map<String, String> paramMap = new HashMap<>();
-		paramMap.put("name", "上海到马洲");
-		paramMap.put("time", LocalDateTime.now().format(DateTimeFormatter.ofPattern("M月d日HH点mm分")));
-		paramMap.put("address", "上海火车站");
-		System.out.println(smsHelper.smsProperties.getTplOrderOk());
-		smsHelper.sendSms("13661561730", smsHelper.smsProperties.getTplOrderOk(), paramMap);
-	}
+    @Test
+    public void test1() {
+        Map<String, String> paramMap = new HashMap<>();
+        paramMap.put("name", "上海到马洲");
+        paramMap.put("time", LocalDateTime.now().format(DateTimeFormatter.ofPattern("M月d日HH点mm分")));
+        paramMap.put("address", "上海火车站");
+//		System.out.println(smsHelper.smsProperties.getTplOrderOkForOwner()());
+//		smsHelper.sendSms("13661561730", smsHelper.smsProperties.getTplOrderOk(), paramMap);
+    }
 
-	@Test
-	public void test2() throws Exception {
-		Map<String, String> paramMap = new HashMap<>();
-		paramMap.put("name", "上海到马洲");
+    @Test
+    public void test2() throws Exception {
+        Map<String, String> paramMap = new HashMap<>();
+        paramMap.put("name", "上海到马洲");
 //		paramMap.put("time", LocalDateTime.now().format(DateTimeFormatter.ofPattern("M月d日HH点mm分")));
 //		paramMap.put("time", "ddd");
 //		paramMap.put("address", "上海火车站");
-		smsHelper.sendSms("13661561730", "SMS_67225187", paramMap);
-	}
+        smsHelper.sendSms("13661561730", "SMS_67225187", paramMap);
+    }
 }
