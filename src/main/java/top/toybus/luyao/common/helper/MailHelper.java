@@ -33,9 +33,9 @@ public class MailHelper {
      * 管理员给自己发邮件
      */
     public void sendSimpleMail(String subject, String text) {
-//        if (isNotProdEnv()) {
-//            return;
-//        }
+        if (isNotProdEnv()) {
+            return;
+        }
         SimpleMailMessage simpleMessage = new SimpleMailMessage();
         simpleMessage.setFrom(sender);
         simpleMessage.setTo(sender);
