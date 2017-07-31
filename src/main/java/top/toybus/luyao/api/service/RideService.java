@@ -577,7 +577,7 @@ public class RideService {
             return resData.setCode(1).setMsg("预定的行程不存在"); // err1
         }
         Optional<RideVia> optionalRideVia = ride.getRideViaList().stream()
-                .filter(rideVia -> rideVia.getId() == rideForm.getRideViaId()).findFirst();
+                .filter(rideVia -> rideVia.getId().longValue() == rideForm.getRideViaId().longValue()).findFirst();
         RideVia rideVia = null;
         if (optionalRideVia.isPresent()) {
             rideVia = optionalRideVia.get();
