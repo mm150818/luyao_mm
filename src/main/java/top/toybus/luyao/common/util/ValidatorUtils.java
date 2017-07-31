@@ -21,7 +21,7 @@ public class ValidatorUtils {
     private static final Pattern PATTERN_MOBILE = Pattern.compile("^1\\d{10,15}$");
     // 密码6-16位字母或数字
     // ^(?![0-9]+$)(?![a-zA-Z]+$)[0-9A-Za-z]{6,16}$
-    private static final Pattern PATTERN_PASSWORD = Pattern.compile("^[0-9A-Za-z]{6,16}$");
+    private static final Pattern PATTERN_PASSWORD = Pattern.compile("^.{6,16}$");
     // 验证码为4位数字
     private static final Pattern PATTERN_VERIFY_CODE = Pattern.compile("^\\d{4}$");
     // 行程号保留1000内的数字。也就是说从1001开始所有带4的数字不要。E1001(etc的) 普通的就K1002
