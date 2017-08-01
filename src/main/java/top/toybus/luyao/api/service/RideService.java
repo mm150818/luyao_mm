@@ -700,6 +700,8 @@ public class RideService {
             balance.setType(4); // 行程支出
             balanceRepository.save(balance);
 
+            User owner = userRide.getRide().getOwner();
+            owner.setVehicle(vehicleRepository.findOne(owner.getVehicleId()));
             smsHelper.sendOrderOkSms(loginUser, userRide);
         } else {
             Map<String, Object> orderMap = tradeHelper.unifiedOrder(way, orderNo, "马洲路遥-行程支付", totalAmount, 5);
