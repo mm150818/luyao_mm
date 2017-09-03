@@ -70,6 +70,8 @@ public class UserService {
     private TradeHelper tradeHelper;
     @Autowired
     private MailHelper mailHelper;
+    
+    private static String CELLPHONE=null;//新注册用户手机号
 
     /**
      * 注册用户
@@ -93,7 +95,11 @@ public class UserService {
                 if (exists) {
                     resData.setCode(4).setMsg("该手机号已经存在"); // err4
                 } else {
-                    User newUser = new User();
+                	
+                	CELLPHONE=userForm.getMobile();
+                	System.out.println(CELLPHONE);
+                    
+                	User newUser = new User();
                     newUser.setMobile(userForm.getMobile());
                     newUser.setToken(UUIDUtils.randUUID());
                     newUser.setPassword(DigestUtils.md5Hex(userForm.getPassword()));
@@ -425,7 +431,7 @@ public class UserService {
         userRepository.updateUserOwnerById(loginUser.getId(), 2, vehicle.getId());
 
         // 发送邮件
-        mailHelper.sendSimpleMail("车主认证", "有新的车主需要认证。");
+        mailHelper.sendSimpleMail("车主认证", "有新的车主需要认证,该用户 的手机号为："+CELLPHONE);
 
         resData.put("vehicle", vehicle);
         return resData;

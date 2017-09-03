@@ -16,6 +16,7 @@
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<java.version>1.8</java.version>
 		<log4jdbc.version>0.2.7</log4jdbc.version>
+		
 		<aliyun-sdk-mns.version>1.1.8.4</aliyun-sdk-mns.version>
 		<commons-collections4.version>4.1</commons-collections4.version>
 		<commons-lang3.version>3.5</commons-lang3.version>
